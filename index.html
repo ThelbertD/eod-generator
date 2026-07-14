@@ -4,23 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EODly — Write your end-of-day report in 60 seconds</title>
-<meta name="description" content="Dump your day. Get a clean, manager-ready EOD report. Formatted for Slack, email, or PDF. Free, private, works offline.">
+<meta name="description" content="Dump your day, drop in screenshots. Get a clean, manager-ready EOD report. Export to HTML, Word, PDF, Slack or email. Free, private, runs in your browser.">
 <style>
   :root{
-    --bg:#07080c;
-    --bg-2:#0c0e14;
-    --panel:#10131b;
-    --panel-2:#151926;
-    --line:#1e2434;
-    --line-2:#2a3145;
-    --txt:#eef1f7;
-    --txt-2:#9aa3b8;
-    --txt-3:#646d84;
-    --accent:#6d5efc;
-    --accent-2:#22d3ee;
-    --good:#34d399;
-    --warn:#fbbf24;
-    --bad:#fb7185;
+    --bg:#07080c; --bg-2:#0c0e14; --panel:#10131b; --panel-2:#151926;
+    --line:#1e2434; --line-2:#2a3145;
+    --txt:#eef1f7; --txt-2:#9aa3b8; --txt-3:#646d84;
+    --accent:#6d5efc; --accent-2:#22d3ee;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
     --radius:14px;
     --shadow:0 20px 60px -20px rgba(0,0,0,.8);
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
@@ -28,122 +19,69 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{
-    background:var(--bg);
-    color:var(--txt);
-    font-family:var(--font);
-    line-height:1.6;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
+  body{background:var(--bg);color:var(--txt);font-family:var(--font);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
   ::selection{background:var(--accent);color:#fff}
 
-  /* ---------- ambient bg ---------- */
-  .glow{
-    position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:
-      radial-gradient(600px 400px at 15% -5%, rgba(109,94,252,.18), transparent 60%),
-      radial-gradient(700px 500px at 90% 0%, rgba(34,211,238,.10), transparent 60%),
-      radial-gradient(900px 600px at 50% 100%, rgba(109,94,252,.07), transparent 65%);
-  }
-  .grid-bg{
-    position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
+  .glow{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(600px 400px at 15% -5%,rgba(109,94,252,.18),transparent 60%),
+               radial-gradient(700px 500px at 90% 0%,rgba(34,211,238,.10),transparent 60%),
+               radial-gradient(900px 600px at 50% 100%,rgba(109,94,252,.07),transparent 65%);}
+  .grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
     background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
     background-size:60px 60px;
     mask-image:radial-gradient(ellipse 80% 50% at 50% 0%,#000 20%,transparent 75%);
-    -webkit-mask-image:radial-gradient(ellipse 80% 50% at 50% 0%,#000 20%,transparent 75%);
-  }
+    -webkit-mask-image:radial-gradient(ellipse 80% 50% at 50% 0%,#000 20%,transparent 75%);}
   .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 24px}
 
-  /* ---------- nav ---------- */
-  nav{
-    position:sticky;top:0;z-index:50;
-    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    background:rgba(7,8,12,.72);
-    border-bottom:1px solid transparent;
-    transition:border-color .3s;
-  }
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      background:rgba(7,8,12,.72);border-bottom:1px solid transparent;transition:border-color .3s}
   nav.stuck{border-bottom-color:var(--line)}
   .nav-in{display:flex;align-items:center;justify-content:space-between;height:66px}
   .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.02em}
-  .logo-mark{
-    width:30px;height:30px;border-radius:8px;
-    background:linear-gradient(135deg,var(--accent),var(--accent-2));
-    display:grid;place-items:center;font-size:15px;
-    box-shadow:0 4px 16px -4px rgba(109,94,252,.7);
-  }
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;font-size:15px;box-shadow:0 4px 16px -4px rgba(109,94,252,.7)}
   .nav-links{display:flex;align-items:center;gap:28px}
   .nav-links a{font-size:14px;color:var(--txt-2);transition:color .18s}
   .nav-links a:hover{color:var(--txt)}
   @media(max-width:760px){.nav-links a:not(.btn){display:none}}
 
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;
-    border:1px solid var(--line-2);background:var(--panel-2);color:var(--txt);
-    cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap;
-  }
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;
+    font-size:14px;font-weight:600;border:1px solid var(--line-2);background:var(--panel-2);color:var(--txt);
+    cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap}
   .btn:hover{border-color:#3b4463;background:#1a1f31;transform:translateY(-1px)}
   .btn:active{transform:translateY(0)}
-  .btn-primary{
-    background:linear-gradient(135deg,var(--accent),#8b7dff);
-    border-color:transparent;color:#fff;
-    box-shadow:0 8px 24px -8px rgba(109,94,252,.8);
-  }
-  .btn-primary:hover{background:linear-gradient(135deg,#7d6fff,#9a8dff);box-shadow:0 12px 30px -8px rgba(109,94,252,.9)}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#8b7dff);border-color:transparent;color:#fff;
+    box-shadow:0 8px 24px -8px rgba(109,94,252,.8)}
+  .btn-primary:hover{background:linear-gradient(135deg,#7d6fff,#9a8dff)}
   .btn-lg{padding:14px 26px;font-size:15px;border-radius:12px}
   .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px}
+  .btn-xs{padding:5px 9px;font-size:11.5px;border-radius:7px;gap:5px}
   .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 
-  /* ---------- hero ---------- */
   header{padding:92px 0 70px;text-align:center}
-  .pill{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:6px 14px;border-radius:999px;font-size:13px;color:var(--txt-2);
-    border:1px solid var(--line-2);background:rgba(21,25,38,.6);margin-bottom:26px;
-  }
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:13px;
+    color:var(--txt-2);border:1px solid var(--line-2);background:rgba(21,25,38,.6);margin-bottom:26px}
   .pill b{color:var(--txt);font-weight:600}
   .dot{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-
-  h1{
-    font-size:clamp(38px,6.2vw,66px);
-    line-height:1.05;letter-spacing:-.035em;font-weight:800;
-    margin-bottom:22px;
-  }
-  .grad{
-    background:linear-gradient(120deg,var(--accent-2) 0%,#a89bff 45%,var(--accent) 100%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .sub{
-    font-size:clamp(16px,2vw,19px);color:var(--txt-2);
-    max-width:620px;margin:0 auto 34px;line-height:1.65;
-  }
+  h1{font-size:clamp(38px,6.2vw,66px);line-height:1.05;letter-spacing:-.035em;font-weight:800;margin-bottom:22px}
+  .grad{background:linear-gradient(120deg,var(--accent-2) 0%,#a89bff 45%,var(--accent) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:clamp(16px,2vw,19px);color:var(--txt-2);max-width:640px;margin:0 auto 34px;line-height:1.65}
   .hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
   .micro{font-size:13px;color:var(--txt-3)}
   .micro b{color:var(--txt-2);font-weight:600}
 
-  /* ---------- app / generator ---------- */
   section{padding:80px 0;position:relative}
-  .sec-head{text-align:center;max-width:640px;margin:0 auto 48px}
-  .eyebrow{
-    font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--accent-2);margin-bottom:14px;
-  }
+  .sec-head{text-align:center;max-width:660px;margin:0 auto 48px}
+  .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2);margin-bottom:14px}
   h2{font-size:clamp(28px,4vw,42px);letter-spacing:-.03em;font-weight:800;line-height:1.15;margin-bottom:14px}
   .sec-head p{color:var(--txt-2);font-size:16.5px}
 
-  .app{
-    background:linear-gradient(180deg,var(--panel),var(--bg-2));
-    border:1px solid var(--line);border-radius:20px;
-    box-shadow:var(--shadow);overflow:hidden;
-  }
-  .app-bar{
-    display:flex;align-items:center;gap:10px;
-    padding:14px 18px;border-bottom:1px solid var(--line);
-    background:rgba(0,0,0,.25);
-  }
+  .app{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);
+    border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+  .app-bar{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.25)}
   .tl{display:flex;gap:7px}
   .tl i{width:11px;height:11px;border-radius:50%;display:block}
   .tl i:nth-child(1){background:#ff5f57}.tl i:nth-child(2){background:#febc2e}.tl i:nth-child(3){background:#28c840}
@@ -151,10 +89,12 @@
   .app-bar .spacer{flex:1}
 
   .app-body{display:grid;grid-template-columns:1fr 1fr;min-height:640px}
-  @media(max-width:940px){.app-body{grid-template-columns:1fr}}
-  .pane{padding:26px}
-  .pane-l{border-right:1px solid var(--line)}
-  @media(max-width:940px){.pane-l{border-right:none;border-bottom:1px solid var(--line)}}
+  @media(max-width:1000px){.app-body{grid-template-columns:1fr}}
+  .pane{padding:26px;min-width:0}
+  .pane-l{border-right:1px solid var(--line);max-height:900px;overflow-y:auto}
+  @media(max-width:1000px){.pane-l{border-right:none;border-bottom:1px solid var(--line);max-height:none}}
+  .pane-l::-webkit-scrollbar,.out::-webkit-scrollbar{width:8px}
+  .pane-l::-webkit-scrollbar-thumb,.out::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
 
   .pane-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
   .pane-head h3{font-size:15px;font-weight:700;letter-spacing:-.01em}
@@ -163,117 +103,103 @@
   .field{margin-bottom:18px}
   label{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--txt-2);margin-bottom:7px}
   label .tag{font-size:11px;color:var(--txt-3);font-weight:500}
-  input[type=text],input[type=date],textarea,select{
-    width:100%;padding:11px 13px;border-radius:10px;
-    border:1px solid var(--line);background:#0a0c12;color:var(--txt);
-    font-family:inherit;font-size:14px;transition:border-color .18s,box-shadow .18s;resize:vertical;
-  }
-  input:focus,textarea:focus,select:focus{
-    outline:none;border-color:var(--accent);
-    box-shadow:0 0 0 3px rgba(109,94,252,.16);
-  }
-  textarea{line-height:1.6;min-height:92px}
+  input[type=text],input[type=date],textarea,select{width:100%;padding:11px 13px;border-radius:10px;
+    border:1px solid var(--line);background:#0a0c12;color:var(--txt);font-family:inherit;font-size:14px;
+    transition:border-color .18s,box-shadow .18s;resize:vertical}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(109,94,252,.16)}
+  textarea{line-height:1.6;min-height:82px}
   textarea::placeholder,input::placeholder{color:#4a5268}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-  .seg{display:flex;gap:6px;background:#0a0c12;border:1px solid var(--line);border-radius:10px;padding:4px}
-  .seg button{
-    flex:1;padding:8px 6px;border:none;background:transparent;color:var(--txt-2);
-    font-family:inherit;font-size:12.5px;font-weight:600;border-radius:7px;cursor:pointer;transition:all .16s;
-  }
+  .seg{display:flex;gap:6px;background:#0a0c12;border:1px solid var(--line);border-radius:10px;padding:4px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:64px;padding:8px 6px;border:none;background:transparent;color:var(--txt-2);
+    font-family:inherit;font-size:12.5px;font-weight:600;border-radius:7px;cursor:pointer;transition:all .16s}
   .seg button:hover{color:var(--txt)}
   .seg button.on{background:var(--accent);color:#fff;box-shadow:0 3px 12px -3px rgba(109,94,252,.8)}
 
   .mood{display:flex;gap:8px}
-  .mood button{
-    flex:1;padding:9px 4px;border-radius:9px;border:1px solid var(--line);
-    background:#0a0c12;cursor:pointer;font-size:18px;transition:all .16s;line-height:1;
-  }
+  .mood button{flex:1;padding:9px 4px;border-radius:9px;border:1px solid var(--line);background:#0a0c12;
+    cursor:pointer;font-size:18px;transition:all .16s;line-height:1}
   .mood button:hover{border-color:var(--line-2);transform:translateY(-2px)}
   .mood button.on{border-color:var(--accent);background:rgba(109,94,252,.14);box-shadow:0 0 0 3px rgba(109,94,252,.12)}
 
-  /* output */
-  .out-wrap{position:relative;height:100%;display:flex;flex-direction:column}
-  .out{
-    flex:1;background:#0a0c12;border:1px solid var(--line);border-radius:12px;
-    padding:20px;font-family:var(--mono);font-size:13px;line-height:1.75;
-    color:#cdd4e3;white-space:pre-wrap;word-break:break-word;
-    overflow-y:auto;max-height:520px;min-height:300px;
-  }
-  .out::-webkit-scrollbar{width:8px}
-  .out::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
+  /* ---- block sections ---- */
+  .sect{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;background:rgba(10,12,18,.5);transition:border-color .18s,background .18s}
+  .sect.drag{border-color:var(--accent);background:rgba(109,94,252,.08)}
+  .sect-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+  .sect-head .t{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .sect-head .t small{font-weight:500;color:var(--txt-3);font-size:11px}
+  .adds{display:flex;gap:6px}
+  .blocks{display:flex;flex-direction:column;gap:10px}
+  .blk{position:relative}
+  .blk textarea{min-height:70px}
+  .imgblk{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0a0c12}
+  .imgblk img{display:block;width:100%;max-height:220px;object-fit:contain;background:#05060a}
+  .imgblk .cap{display:flex;gap:6px;align-items:center;padding:8px;border-top:1px solid var(--line)}
+  .imgblk .cap input{padding:7px 9px;font-size:12.5px;border-radius:7px}
+  .blk-tools{display:flex;gap:4px;justify-content:flex-end;margin-top:5px}
+  .ibtn{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);
+    color:var(--txt-2);cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center;transition:all .15s}
+  .ibtn:hover{color:var(--txt);border-color:var(--line-2)}
+  .ibtn.del:hover{color:var(--bad);border-color:var(--bad)}
+  .drop-note{font-size:11.5px;color:var(--txt-3);text-align:center;padding:10px;border:1px dashed var(--line-2);border-radius:9px}
+
+  /* ---- output ---- */
+  .out-wrap{position:relative;display:flex;flex-direction:column;height:100%}
+  .out{flex:1;background:#0a0c12;border:1px solid var(--line);border-radius:12px;padding:20px;
+    font-family:var(--mono);font-size:13px;line-height:1.75;color:#cdd4e3;white-space:pre-wrap;word-break:break-word;
+    overflow-y:auto;max-height:620px;min-height:320px}
   .out .h{color:#fff;font-weight:700}
   .out .m{color:var(--accent-2)}
+  .out .img{color:var(--warn)}
   .out .empty{color:var(--txt-3);font-style:italic;font-family:var(--font)}
+  .out.web{padding:0;white-space:normal;background:#fff}
+  .out.web iframe{width:100%;height:600px;border:0;border-radius:11px;display:block;background:#fff}
   .out-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-
-  .stats{display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--txt-3)}
+  .stats{display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--txt-3);flex-wrap:wrap}
   .stats span b{color:var(--txt-2)}
 
-  .toast{
-    position:fixed;bottom:28px;left:50%;transform:translate(-50%,20px);
-    background:var(--good);color:#04120c;font-weight:700;font-size:14px;
-    padding:12px 22px;border-radius:11px;z-index:200;
-    opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.2,.8,.2,1);
-    box-shadow:0 12px 40px -8px rgba(52,211,153,.6);
-  }
+  .toast{position:fixed;bottom:28px;left:50%;transform:translate(-50%,20px);background:var(--good);color:#04120c;
+    font-weight:700;font-size:14px;padding:12px 22px;border-radius:11px;z-index:200;opacity:0;pointer-events:none;
+    transition:all .28s cubic-bezier(.2,.8,.2,1);box-shadow:0 12px 40px -8px rgba(52,211,153,.6);max-width:90vw;text-align:center}
   .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.warn{background:var(--warn);color:#241a02;box-shadow:0 12px 40px -8px rgba(251,191,36,.6)}
 
-  /* ---------- features ---------- */
   .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
   @media(max-width:900px){.cards{grid-template-columns:1fr}}
-  .card{
-    background:linear-gradient(180deg,var(--panel),rgba(12,14,20,.5));
-    border:1px solid var(--line);border-radius:var(--radius);padding:26px;
-    transition:transform .22s,border-color .22s;
-  }
+  .card{background:linear-gradient(180deg,var(--panel),rgba(12,14,20,.5));border:1px solid var(--line);
+    border-radius:var(--radius);padding:26px;transition:transform .22s,border-color .22s}
   .card:hover{transform:translateY(-4px);border-color:var(--line-2)}
-  .card .ico{
-    width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
-    background:rgba(109,94,252,.12);border:1px solid rgba(109,94,252,.28);
-    font-size:19px;margin-bottom:16px;
-  }
+  .card .ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
+    background:rgba(109,94,252,.12);border:1px solid rgba(109,94,252,.28);font-size:19px;margin-bottom:16px}
   .card h3{font-size:16.5px;font-weight:700;margin-bottom:8px;letter-spacing:-.01em}
   .card p{font-size:14.5px;color:var(--txt-2);line-height:1.65}
+  .card code{font-family:var(--mono);font-size:13px;color:var(--accent-2);background:rgba(34,211,238,.08);padding:1px 5px;border-radius:4px}
 
-  /* ---------- steps ---------- */
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr)}
   @media(max-width:900px){.steps{grid-template-columns:1fr;gap:28px}}
   .step{padding:0 24px;text-align:center;position:relative}
-  .step:not(:last-child)::after{
-    content:'';position:absolute;top:26px;right:-16px;width:32px;height:1px;
-    background:linear-gradient(90deg,var(--line-2),transparent);
-  }
+  .step:not(:last-child)::after{content:'';position:absolute;top:26px;right:-16px;width:32px;height:1px;
+    background:linear-gradient(90deg,var(--line-2),transparent)}
   @media(max-width:900px){.step::after{display:none}}
-  .step .n{
-    width:52px;height:52px;margin:0 auto 18px;border-radius:14px;
-    display:grid;place-items:center;font-weight:800;font-size:19px;
-    background:linear-gradient(135deg,rgba(109,94,252,.2),rgba(34,211,238,.12));
-    border:1px solid var(--line-2);color:var(--accent-2);
-  }
+  .step .n{width:52px;height:52px;margin:0 auto 18px;border-radius:14px;display:grid;place-items:center;
+    font-weight:800;font-size:19px;background:linear-gradient(135deg,rgba(109,94,252,.2),rgba(34,211,238,.12));
+    border:1px solid var(--line-2);color:var(--accent-2)}
   .step h3{font-size:16px;margin-bottom:8px;font-weight:700}
   .step p{font-size:14.5px;color:var(--txt-2)}
 
-  /* ---------- faq ---------- */
   .faq{max-width:720px;margin:0 auto}
   details{border-bottom:1px solid var(--line);padding:20px 0}
-  summary{
-    cursor:pointer;font-weight:650;font-size:16px;list-style:none;
-    display:flex;justify-content:space-between;align-items:center;gap:16px;
-  }
+  summary{cursor:pointer;font-weight:650;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px}
   summary::-webkit-details-marker{display:none}
   summary::after{content:'+';color:var(--accent-2);font-size:21px;font-weight:400;transition:transform .2s}
   details[open] summary::after{transform:rotate(45deg)}
   details p{margin-top:12px;color:var(--txt-2);font-size:15px;line-height:1.7}
+  details code{font-family:var(--mono);font-size:13.5px;color:var(--accent-2)}
 
-  /* ---------- cta ---------- */
-  .cta{
-    text-align:center;padding:64px 32px;border-radius:22px;
-    background:
-      radial-gradient(600px 300px at 50% 0%, rgba(109,94,252,.22), transparent 70%),
-      linear-gradient(180deg,var(--panel),var(--bg-2));
-    border:1px solid var(--line-2);
-  }
+  .cta{text-align:center;padding:64px 32px;border-radius:22px;
+    background:radial-gradient(600px 300px at 50% 0%,rgba(109,94,252,.22),transparent 70%),linear-gradient(180deg,var(--panel),var(--bg-2));
+    border:1px solid var(--line-2)}
   .cta h2{margin-bottom:12px}
   .cta p{color:var(--txt-2);margin-bottom:28px;font-size:16.5px}
 
@@ -281,18 +207,8 @@
   .foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--txt-3)}
   .foot a:hover{color:var(--txt-2)}
 
-  /* reveal */
   .rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
   .rv.in{opacity:1;transform:none}
-
-  @media print{
-    body{background:#fff;color:#000}
-    nav,header,.glow,.grid-bg,section:not(#generator),footer,.out-actions,.pane-l,.app-bar,.sec-head{display:none!important}
-    .app,.app-body,.pane{border:none;box-shadow:none;padding:0;background:#fff}
-    .out{background:#fff;color:#000;border:none;max-height:none;font-family:var(--font);font-size:13px;white-space:pre-wrap}
-    .out .h{color:#000}.out .m{color:#444}
-    .stats{display:none}
-  }
 </style>
 </head>
 <body>
@@ -315,7 +231,7 @@
   <div class="wrap">
     <div class="pill"><span class="dot"></span> <b>Free forever.</b> No signup, no API key, no data leaves your browser.</div>
     <h1>Your end-of-day report,<br><span class="grad">written before you close the laptop.</span></h1>
-    <p class="sub">Dump today's tasks as messy bullets. Get back a clean, manager-ready EOD — formatted for Slack, email, or PDF — in about sixty seconds.</p>
+    <p class="sub">Dump today's work as messy bullets, drop screenshots straight into any section, and get back a manager-ready EOD — as a shareable web page, Word doc, PDF, Slack post or email.</p>
     <div class="hero-cta">
       <a href="#generator" class="btn btn-primary btn-lg">Generate my EOD — free</a>
       <a href="#how" class="btn btn-lg">See how it works</a>
@@ -330,7 +246,7 @@
     <div class="app rv">
       <div class="app-bar">
         <div class="tl"><i></i><i></i><i></i></div>
-        <span class="app-title">eod-report.md</span>
+        <span class="app-title">eod-report</span>
         <div class="spacer"></div>
         <button class="btn btn-sm" id="btnSample">Load sample</button>
         <button class="btn btn-sm" id="btnClear">Clear</button>
@@ -341,55 +257,26 @@
         <div class="pane pane-l">
           <div class="pane-head">
             <h3>Your day, unfiltered</h3>
-            <span class="hint">One item per line</span>
+            <span class="hint">Text · images · text · images</span>
           </div>
 
           <div class="field row">
-            <div>
-              <label>Your name</label>
-              <input type="text" id="fName" placeholder="Alex Rivera">
-            </div>
-            <div>
-              <label>Date</label>
-              <input type="date" id="fDate">
-            </div>
+            <div><label>Your name</label><input type="text" id="fName" placeholder="Alex Rivera"></div>
+            <div><label>Date</label><input type="date" id="fDate"></div>
           </div>
-
           <div class="field row">
-            <div>
-              <label>Team / project <span class="tag">optional</span></label>
-              <input type="text" id="fTeam" placeholder="Growth · Q3 Onboarding">
-            </div>
-            <div>
-              <label>Hours logged <span class="tag">optional</span></label>
-              <input type="text" id="fHours" placeholder="7.5">
-            </div>
+            <div><label>Team / project <span class="tag">optional</span></label><input type="text" id="fTeam" placeholder="Growth · Q3 Onboarding"></div>
+            <div><label>Hours logged <span class="tag">optional</span></label><input type="text" id="fHours" placeholder="7.5"></div>
           </div>
 
-          <div class="field">
-            <label>✅ Shipped / completed today</label>
-            <textarea id="fDone" placeholder="Fixed checkout timeout bug (#412)&#10;Shipped v2 pricing page copy&#10;Onboarding call with Acme — 45 min"></textarea>
-          </div>
-
-          <div class="field">
-            <label>🔄 In progress <span class="tag">add % if you like: "API refactor — 60%"</span></label>
-            <textarea id="fWip" placeholder="Stripe webhook refactor — 60%&#10;Q3 roadmap draft — waiting on design"></textarea>
-          </div>
-
-          <div class="field">
-            <label>🚧 Blockers / needs</label>
-            <textarea id="fBlock" placeholder="Need staging DB creds from Devops&#10;Legal review on new ToS — 3 days waiting"></textarea>
-          </div>
-
-          <div class="field">
-            <label>🎯 Tomorrow's focus</label>
-            <textarea id="fNext" placeholder="Ship webhook refactor&#10;Prep Thursday QBR deck"></textarea>
-          </div>
+          <!-- block sections injected here -->
+          <div id="sections"></div>
 
           <div class="field">
             <label>Format</label>
             <div class="seg" id="segFormat">
-              <button data-f="slack" class="on">Slack</button>
+              <button data-f="web" class="on">Web page</button>
+              <button data-f="slack">Slack</button>
               <button data-f="email">Email</button>
               <button data-f="markdown">Markdown</button>
               <button data-f="plain">Plain</button>
@@ -421,21 +308,22 @@
         <div class="pane">
           <div class="pane-head">
             <h3>Your EOD report</h3>
-            <span class="hint" id="fmtLabel">Slack format</span>
+            <span class="hint" id="fmtLabel">Web page</span>
           </div>
           <div class="out-wrap">
             <div class="out" id="out"><span class="empty">Start typing on the left — your report writes itself here. Or hit “Load sample” up top.</span></div>
             <div class="out-actions">
-              <button class="btn btn-primary" id="btnCopy">📋 Copy report</button>
-              <button class="btn" id="btnPdf">📄 Download PDF</button>
-              <button class="btn" id="btnWord">📝 Download Word</button>
+              <button class="btn btn-primary" id="btnCopy">📋 Copy</button>
+              <button class="btn" id="btnHtml">🌐 Download HTML page</button>
+              <button class="btn" id="btnPdf">📄 PDF</button>
+              <button class="btn" id="btnWord">📝 Word</button>
               <button class="btn" id="btnDl">⬇ .md</button>
               <button class="btn" id="btnMail">✉ Email</button>
             </div>
             <div class="stats">
               <span><b id="stItems">0</b> items</span>
+              <span><b id="stImgs">0</b> images</span>
               <span><b id="stWords">0</b> words</span>
-              <span><b id="stRead">0s</b> read time</span>
               <span id="stSaved" style="margin-left:auto;color:var(--good)"></span>
             </div>
           </div>
@@ -445,35 +333,33 @@
   </div>
 </section>
 
-<!-- ============ HOW ============ -->
 <section id="how">
   <div class="wrap">
     <div class="sec-head rv">
       <div class="eyebrow">How it works</div>
       <h2>Three steps. No blank page.</h2>
-      <p>The hard part of an EOD isn't the writing — it's remembering what you did and making it sound like a report.</p>
+      <p>The hard part of an EOD isn't the writing — it's remembering what you did and making it look like proof.</p>
     </div>
     <div class="steps rv">
       <div class="step">
         <div class="n">1</div>
-        <h3>Brain-dump your bullets</h3>
-        <p>Type the way you'd text a colleague. Fragments, typos, half-sentences — all fine.</p>
+        <h3>Brain-dump &amp; drop screenshots</h3>
+        <p>Type like you'd text a colleague. Add an image, then keep typing under it. Stack as many text and image blocks as you want.</p>
       </div>
       <div class="step">
         <div class="n">2</div>
         <h3>Pick format &amp; tone</h3>
-        <p>Slack for standups, email for managers, Markdown for Notion, plain text for anything else.</p>
+        <p>A full web page with your screenshots, or Slack, email, Markdown and plain text for the copy-paste crowd.</p>
       </div>
       <div class="step">
         <div class="n">3</div>
-        <h3>Copy, send, log off</h3>
-        <p>One click to clipboard, PDF, or your mail client. Yesterday's report auto-restores tomorrow.</p>
+        <h3>Export and log off</h3>
+        <p>Self-contained HTML page, Word doc, PDF, or straight to your clipboard. Everything restores tomorrow.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ FEATURES ============ -->
 <section id="features">
   <div class="wrap">
     <div class="sec-head rv">
@@ -483,24 +369,24 @@
     </div>
     <div class="cards rv">
       <div class="card">
+        <div class="ico">🖼</div>
+        <h3>Screenshots inside any section</h3>
+        <p>Add an image to Shipped, In progress, Blockers or Tomorrow — then write more text below it. Drag a file in, click to browse, or just paste from your clipboard.</p>
+      </div>
+      <div class="card">
+        <div class="ico">🌐</div>
+        <h3>Exports a real web page</h3>
+        <p>One click gives you a self-contained <code>.html</code> file — screenshots embedded, no folder of assets. Open it anywhere, or drop it on any host and send the link.</p>
+      </div>
+      <div class="card">
         <div class="ico">⚡</div>
         <h3>Live as you type</h3>
         <p>No “generate” button to wait on. The report updates on every keystroke, so you always see exactly what your manager will read.</p>
       </div>
       <div class="card">
-        <div class="ico">🎨</div>
-        <h3>Four real formats</h3>
-        <p>Slack keeps the emoji and bold markers. Email gets a greeting and sign-off. Markdown drops into Notion or Linear cleanly. Plain is plain.</p>
-      </div>
-      <div class="card">
         <div class="ico">📄</div>
         <h3>Real Word &amp; PDF files</h3>
-        <p>Not a print dialog — an actual <code>.doc</code> that opens in Word and a properly typeset <code>.pdf</code> with progress bars, page numbers and a summary callout. One click, straight to your downloads.</p>
-      </div>
-      <div class="card">
-        <div class="ico">🔒</div>
-        <h3>Genuinely private</h3>
-        <p>Your report is built in your browser and saved to local storage — it is never uploaded, and there's no backend to upload it to. Your blockers never touch a server.</p>
+        <p>Not a print dialog — an actual <code>.doc</code> that opens in Word and a typeset <code>.pdf</code>, both with your screenshots and progress bars laid out properly.</p>
       </div>
       <div class="card">
         <div class="ico">🧠</div>
@@ -508,52 +394,42 @@
         <p>It reads your item counts and mood, then opens with a one-line TL;DR — the part most people skip and every manager reads.</p>
       </div>
       <div class="card">
-        <div class="ico">💾</div>
-        <h3>Remembers your setup</h3>
-        <p>Name, team, format and tone persist. Tomorrow you open it and only fill in what changed.</p>
-      </div>
-      <div class="card">
-        <div class="ico">🚧</div>
-        <h3>Blockers get teeth</h3>
-        <p>Blockers are pulled to the top and flagged, not buried at the bottom. That's how they actually get unblocked.</p>
+        <div class="ico">🔒</div>
+        <h3>Genuinely private</h3>
+        <p>Your report and images are built in your browser and saved locally. There's no backend to upload them to. Your blockers never touch a server.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ FAQ ============ -->
 <section id="faq">
   <div class="wrap">
-    <div class="sec-head rv">
-      <div class="eyebrow">FAQ</div>
-      <h2>Questions, answered</h2>
-    </div>
+    <div class="sec-head rv"><div class="eyebrow">FAQ</div><h2>Questions, answered</h2></div>
     <div class="faq rv">
       <details open>
+        <summary>How do I add an image and then write under it?</summary>
+        <p>Each section is a stack of blocks. Hit <b>+ Image</b> to add a picture, then <b>+ Text</b> to add another writing box below it — repeat as much as you like. You can also drag a file straight onto a section, or paste a screenshot from your clipboard with <code>Ctrl/Cmd+V</code>. Use the ↑ ↓ arrows on any block to reorder.</p>
+      </details>
+      <details>
+        <summary>Where do the images actually show up?</summary>
+        <p>In the <b>Web page</b>, <b>Word</b> and <b>PDF</b> exports, embedded directly in the file. Slack, email, Markdown and plain text are text-only formats, so images appear there as a labelled placeholder like <code>[Image: staging error]</code> — paste those screenshots in manually after posting.</p>
+      </details>
+      <details>
         <summary>Is my data sent anywhere?</summary>
-        <p>No. There is no backend and no analytics, so your report is never uploaded anywhere. Your entries are saved only to this browser's local storage, and clearing them removes them permanently. The one and only network request the page can make is fetching the PDF-rendering library from a CDN, and that happens only if you click <em>Download PDF</em> — the library is fetched, your text is not sent. Everything else, including the Word export, works fully offline.</p>
+        <p>No. There is no backend and no analytics, so your report and screenshots are never uploaded. Everything is saved only to this browser's local storage. The one network request the page can make is fetching the PDF-rendering library from a CDN, and only if you click <b>PDF</b> — the library comes down, your content does not go up.</p>
       </details>
       <details>
-        <summary>Does it use AI?</summary>
-        <p>Not today. It's a deterministic formatter: it takes your bullets, structures them, and writes a summary line from your item counts and mood. That means it's instant, free, and works offline. An optional AI polish pass is on the roadmap.</p>
+        <summary>Will lots of screenshots break it?</summary>
+        <p>Images are automatically resized and compressed before they're stored, which keeps things fast. But browser local storage is capped at a few megabytes, so if you add a lot of large images the auto-save may not fit — you'll get a clear warning if that happens, and your report still exports perfectly. Just export before closing the tab.</p>
       </details>
       <details>
-        <summary>Can I use it for standups or weekly reports?</summary>
-        <p>Yes. The same structure — done, in progress, blocked, next — is exactly what a standup or weekly wants. Change the date field and paste a week's worth of bullets.</p>
-      </details>
-      <details>
-        <summary>What's the “% done” thing in the In Progress box?</summary>
-        <p>Purely optional. Write <code>API refactor — 60%</code> and the report renders it as a progress item. Skip it and the line stays a plain bullet.</p>
-      </details>
-      <details>
-        <summary>Does it work on my phone?</summary>
-        <p>Yes — the panes stack and every button stays tappable. Type on the train, copy, paste into Slack, done.</p>
+        <summary>What's the “% done” thing in In progress?</summary>
+        <p>Optional. Write <code>API refactor — 60%</code> and the report renders a real progress bar for it in the web, Word and PDF exports. Skip it and the line stays a plain bullet.</p>
       </details>
     </div>
   </div>
 </section>
 
-<!-- ============ CTA ============ -->
 <section>
   <div class="wrap">
     <div class="cta rv">
@@ -568,51 +444,63 @@
   <div class="wrap foot">
     <div>© <span id="yr"></span> EODly — runs entirely in your browser.</div>
     <div style="display:flex;gap:22px">
-      <a href="#generator">Generator</a>
-      <a href="#features">Features</a>
-      <a href="#faq">FAQ</a>
+      <a href="#generator">Generator</a><a href="#features">Features</a><a href="#faq">FAQ</a>
     </div>
   </div>
 </footer>
 
 <div class="toast" id="toast">Copied ✓</div>
+<input type="file" id="filePick" accept="image/*" multiple style="display:none">
 
 <script>
 (function(){
   'use strict';
   const $ = id => document.getElementById(id);
-  const KEY = 'eodly.v1';
+  const KEY = 'eodly.v2', OLD = 'eodly.v1';
 
-  const F = {
-    name:$('fName'), date:$('fDate'), team:$('fTeam'), hours:$('fHours'),
-    done:$('fDone'), wip:$('fWip'), block:$('fBlock'), next:$('fNext')
+  /* ---------- section definitions ---------- */
+  const SECTIONS = [
+    {k:'done',  emoji:'✅', title:'Shipped / completed', hint:'what actually landed today'},
+    {k:'wip',   emoji:'🔄', title:'In progress',         hint:'add "— 60%" for a progress bar'},
+    {k:'block', emoji:'🚧', title:'Blockers / needs',    hint:'pulled to the top of the report'},
+    {k:'next',  emoji:'🎯', title:"Tomorrow's focus",    hint:'what you pick up first'}
+  ];
+
+  /* state.blocks[k] = [{type:'text',value}|{type:'image',src,w,h,caption}] */
+  const state = {
+    name:'', date:'', team:'', hours:'',
+    blocks:{done:[],wip:[],block:[],next:[]},
+    format:'web', tone:'crisp', mood:'solid'
   };
+  let focusedSection = 'done';
+
+  const F = {name:$('fName'), date:$('fDate'), team:$('fTeam'), hours:$('fHours')};
   const out = $('out');
-  let format = 'slack', tone = 'crisp', mood = 'solid';
 
   /* ---------- helpers ---------- */
   const lines = s => (s||'').split('\n').map(l=>l.replace(/^[-*•\s]+/,'').trim()).filter(Boolean);
-  const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const cap = s => s ? s[0].toUpperCase()+s.slice(1) : s;
 
   function prettyDate(v){
     if(!v) return '';
     const [y,m,d] = v.split('-').map(Number);
-    const dt = new Date(y, m-1, d);
-    return dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   }
-
-  /* progress bar for "item — 60%" */
   function wipLine(l){
     const m = l.match(/[—\-–:]\s*(\d{1,3})\s*%\s*$/);
     if(!m) return {text:l, pct:null};
-    const pct = Math.min(100, parseInt(m[1],10));
-    return {text:l.slice(0,m.index).trim(), pct};
+    return {text:l.slice(0,m.index).trim(), pct:Math.min(100,parseInt(m[1],10))};
   }
-  const bar = p => '█'.repeat(Math.round(p/10)) + '░'.repeat(10-Math.round(p/10));
+  const barTxt = p => '█'.repeat(Math.round(p/10)) + '░'.repeat(10-Math.round(p/10));
 
-  /* ---------- the summary line — the actual "generation" ---------- */
-  function summarize(d,w,b,n){
+  const allItems = k => state.blocks[k].filter(b=>b.type==='text').flatMap(b=>lines(b.value));
+  const allImgs  = k => state.blocks[k].filter(b=>b.type==='image');
+  const imgCount = () => SECTIONS.reduce((n,s)=>n+allImgs(s.k).length,0);
+
+  /* ---------- the summary line ---------- */
+  function summarize(){
+    const d=allItems('done'), w=allItems('wip'), b=allItems('block'), n=allItems('next');
     const moodMap = {
       great:  ['Strong day','A genuinely strong day','Great day — momentum is real'],
       solid:  ['Solid day','Steady progress','A productive, uneventful day'],
@@ -620,428 +508,660 @@
       rough:  ['Tough day','Heavy day','A grind, but ground was gained'],
       blocked:['Blocked day','Held up more than moved','Little forward motion — see blockers']
     };
-    const lead = moodMap[mood][tone==='formal'?2:(tone==='warm'?1:0)];
+    const lead = moodMap[state.mood][state.tone==='formal'?2:(state.tone==='warm'?1:0)];
     const bits = [];
     if(d.length) bits.push(`${d.length} item${d.length>1?'s':''} shipped`);
     if(w.length) bits.push(`${w.length} in flight`);
     if(b.length) bits.push(`${b.length} blocker${b.length>1?'s':''} needing attention`);
-    if(!bits.length) return tone==='formal' ? 'No material updates to report today.' : 'Quiet one — nothing major to report.';
+    if(!bits.length) return state.tone==='formal' ? 'No material updates to report today.' : 'Quiet one — nothing major to report.';
     let s = `${lead}: ${bits.join(', ')}.`;
-    if(b.length && mood!=='blocked') s += tone==='formal' ? ' Blocker resolution is the priority for tomorrow.' : ' Blockers are the thing to unstick first.';
-    else if(n.length && !b.length) s += tone==='warm' ? ` Heading into tomorrow with ${n.length} clear priorit${n.length>1?'ies':'y'}.` : '';
+    if(b.length && state.mood!=='blocked')
+      s += state.tone==='formal' ? ' Blocker resolution is the priority for tomorrow.' : ' Blockers are the thing to unstick first.';
+    else if(n.length && !b.length && state.tone==='warm')
+      s += ` Heading into tomorrow with ${n.length} clear priorit${n.length>1?'ies':'y'}.`;
     return s;
   }
 
+  /* ---------- doc model (ordered blocks, blockers first) ---------- */
+  function docModel(){
+    const meta = SECTIONS.map(s => ({
+      ...s,
+      blocks: state.blocks[s.k].filter(b => b.type==='image' || lines(b.value).length)
+    })).filter(s => s.blocks.length);
+    /* blockers first */
+    meta.sort((a,b) => (a.k==='block'?-1:0) - (b.k==='block'?-1:0));
+    return {
+      name:state.name.trim(), team:state.team.trim(), hours:state.hours.trim(),
+      date:prettyDate(state.date), tldr:summarize(),
+      sections:meta,
+      empty: !meta.length
+    };
+  }
+  const fileStem = () => `EOD-${(state.name.trim()||'report').replace(/[^\w\-]+/g,'-')}-${state.date||'today'}`;
+
+  /* ================= TEXT FORMATS ================= */
   const GREET = {crisp:'Hi', formal:'Good evening', warm:'Hey'};
   const SIGN  = {crisp:'— ', formal:'Best regards,\n', warm:'Thanks,\n'};
 
-  /* ---------- renderers ---------- */
-  function build(){
-    const d = lines(F.done.value), w = lines(F.wip.value),
-          b = lines(F.block.value), n = lines(F.next.value);
-    const name = F.name.value.trim(), team = F.team.value.trim(),
-          hrs = F.hours.value.trim(), date = prettyDate(F.date.value);
-    const total = d.length + w.length + b.length + n.length;
-
-    if(!total && !name){
-      out.innerHTML = '<span class="empty">Start typing on the left — your report writes itself here. Or hit “Load sample” up top.</span>';
-      setStats(0,'');
-      return '';
-    }
-
-    const tldr = summarize(d,w,b,n);
+  function buildText(fmt){
+    const m = docModel();
+    if(m.empty && !m.name) return '';
     const L = [];
-    const H = {
-      slack:    {done:'*✅ Shipped*', wip:'*🔄 In progress*', block:'*🚧 Blocked / needs*', next:'*🎯 Tomorrow*'},
-      email:    {done:'Completed today', wip:'In progress', block:'Blockers', next:'Focus for tomorrow'},
-      markdown: {done:'### ✅ Shipped', wip:'### 🔄 In progress', block:'### 🚧 Blocked / needs', next:'### 🎯 Tomorrow'},
-      plain:    {done:'COMPLETED TODAY', wip:'IN PROGRESS', block:'BLOCKERS', next:'TOMORROW'}
-    }[format];
-    const bullet = format==='markdown' ? '- ' : format==='plain' ? '  - ' : '• ';
+    const bullet = fmt==='markdown' ? '- ' : fmt==='plain' ? '  - ' : '• ';
 
-    /* header */
-    if(format==='slack'){
-      L.push(`*EOD — ${name||'Update'}${date?` · ${date}`:''}*`);
-      if(team) L.push(`_${team}_`);
-      L.push('');
-      L.push(tldr);
-    } else if(format==='email'){
-      L.push(`Subject: EOD — ${name||'Update'}${date?` — ${date}`:''}`);
-      L.push('');
-      L.push(`${GREET[tone]},`);
-      L.push('');
-      L.push(tldr);
-    } else if(format==='markdown'){
-      L.push(`## EOD Report — ${name||'Update'}`);
-      const meta = [date, team, hrs?`${hrs}h logged`:''].filter(Boolean).join(' · ');
-      if(meta) L.push(`*${meta}*`);
-      L.push('');
-      L.push(`> ${tldr}`);
+    if(fmt==='slack'){
+      L.push(`*EOD — ${m.name||'Update'}${m.date?` · ${m.date}`:''}*`);
+      if(m.team) L.push(`_${m.team}_`);
+      L.push('', m.tldr);
+    } else if(fmt==='email'){
+      L.push(`Subject: EOD — ${m.name||'Update'}${m.date?` — ${m.date}`:''}`, '', `${GREET[state.tone]},`, '', m.tldr);
+    } else if(fmt==='markdown'){
+      L.push(`## EOD Report — ${m.name||'Update'}`);
+      const mt = [m.date, m.team, m.hours?`${m.hours}h logged`:''].filter(Boolean).join(' · ');
+      if(mt) L.push(`*${mt}*`);
+      L.push('', `> ${m.tldr}`);
     } else {
-      L.push(`EOD REPORT${name?` — ${name.toUpperCase()}`:''}`);
-      if(date) L.push(date);
-      if(team) L.push(team);
-      L.push('='.repeat(46));
-      L.push('');
-      L.push(tldr);
+      L.push(`EOD REPORT${m.name?` — ${m.name.toUpperCase()}`:''}`);
+      if(m.date) L.push(m.date);
+      if(m.team) L.push(m.team);
+      L.push('='.repeat(46), '', m.tldr);
     }
     L.push('');
 
-    /* blockers first when they exist and format allows a callout */
-    const sec = (title, arr, fmt) => {
-      if(!arr.length) return;
-      L.push(title);
-      arr.forEach(item => L.push(bullet + (fmt ? fmt(item) : cap(item))));
+    m.sections.forEach(s=>{
+      const flag = s.k==='block';
+      const head = fmt==='slack'    ? `${flag?'⚠️ ':''}*${s.emoji} ${s.title}*`
+                 : fmt==='markdown' ? `### ${s.emoji} ${s.title}`
+                 : fmt==='email'    ? `${s.title}${flag?' (needs attention)':''}`
+                 : `${flag?'!! ':''}${s.title.toUpperCase()}`;
+      L.push(head);
+      s.blocks.forEach(b=>{
+        if(b.type==='image'){
+          const capt = b.caption?.trim() || 'screenshot';
+          L.push(fmt==='markdown' ? `  ![${capt}](${'./'+capt.replace(/\W+/g,'-').toLowerCase()}.png)` : `  [Image: ${capt}]`);
+        } else {
+          lines(b.value).forEach(it=>{
+            if(s.k==='wip'){
+              const {text,pct} = wipLine(it);
+              L.push(bullet + cap(text) + (pct===null ? '' : `  ${barTxt(pct)} ${pct}%`));
+            } else L.push(bullet + cap(it));
+          });
+        }
+      });
       L.push('');
-    };
-
-    if(b.length && format!=='email'){
-      L.push(format==='slack' ? '⚠️ *Needs attention first*' : format==='markdown' ? '### ⚠️ Needs attention first' : '!! NEEDS ATTENTION FIRST');
-      b.forEach(x => L.push(bullet + cap(x)));
-      L.push('');
-    }
-
-    sec(H.done, d);
-    sec(H.wip, w, item => {
-      const {text,pct} = wipLine(item);
-      return pct===null ? cap(text) : `${cap(text)}  ${bar(pct)} ${pct}%`;
     });
-    if(!(b.length && format!=='email')) sec(H.block, b);
-    sec(H.next, n);
 
-    /* footer */
-    if(format==='slack' && hrs) L.push(`_${hrs}h logged_`);
-    if(format==='email'){
-      L.push(hrs ? `Hours logged: ${hrs}` : '');
-      L.push(SIGN[tone] + (name||''));
+    if(fmt==='slack' && m.hours) L.push(`_${m.hours}h logged_`);
+    if(fmt==='plain' && m.hours) L.push(`Hours logged: ${m.hours}`);
+    if(fmt==='email'){
+      if(m.hours) L.push(`Hours logged: ${m.hours}`);
+      L.push(SIGN[state.tone] + (m.name||''));
     }
-    if(format==='plain' && hrs) L.push(`Hours logged: ${hrs}`);
-
-    const text = L.join('\n').replace(/\n{3,}/g,'\n\n').trim();
-
-    /* render with light highlighting */
-    out.innerHTML = esc(text)
-      .split('\n')
-      .map(l=>{
-        if(/^(\*|#|=|!!|[A-Z][A-Z ]{3,}$|Subject:)/.test(l) || /^&gt;/.test(l))
-          return `<span class="h">${l}</span>`;
-        if(/^(_|Hi|Hey|Good evening|Best regards|Thanks|— )/.test(l))
-          return `<span class="m">${l}</span>`;
-        return l;
-      }).join('\n');
-
-    setStats(total, text);
-    return text;
+    return L.join('\n').replace(/\n{3,}/g,'\n\n').trim();
   }
 
-  function setStats(items, text){
-    const words = text ? text.trim().split(/\s+/).length : 0;
+  /* ================= HTML / LANDING PAGE ================= */
+  function buildHTML({standalone=true} = {}){
+    const m = docModel();
+    if(m.empty && !m.name) return '';
+    const metaBits = [m.date, m.team, m.hours ? `${m.hours}h logged` : ''].filter(Boolean);
+
+    const secHTML = m.sections.map(s=>{
+      const flag = s.k==='block';
+      const body = s.blocks.map(b=>{
+        if(b.type==='image'){
+          return `<figure>
+            <img src="${b.src}" alt="${esc(b.caption||s.title)}">
+            ${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}
+          </figure>`;
+        }
+        const items = lines(b.value).map(it=>{
+          if(s.k==='wip'){
+            const {text,pct} = wipLine(it);
+            if(pct!==null) return `<li><span class="it">${esc(cap(text))}</span>
+              <span class="pbar"><span style="width:${pct}%"></span></span><span class="pct">${pct}%</span></li>`;
+          }
+          return `<li><span class="it">${esc(cap(it))}</span></li>`;
+        }).join('');
+        return items ? `<ul>${items}</ul>` : '';
+      }).join('');
+      return `<section class="sec${flag?' flag':''}">
+        <h2><span class="e">${s.emoji}</span>${esc(s.title)}${flag?'<span class="badge">needs attention</span>':''}</h2>
+        ${body}
+      </section>`;
+    }).join('');
+
+    const inner = `
+  <main class="page">
+    <header class="hdr">
+      <div class="kicker">End of Day Report</div>
+      <h1>${esc(m.name||'Daily Update')}</h1>
+      ${metaBits.length ? `<div class="meta">${metaBits.map(esc).join('<span class="sep">·</span>')}</div>` : ''}
+    </header>
+    <div class="tldr"><strong>Summary</strong>${esc(m.tldr)}</div>
+    ${secHTML}
+    <footer class="ftr">Generated with EODly</footer>
+  </main>`;
+
+    const css = `
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#f6f7fb;color:#111827;line-height:1.6;padding:40px 20px;
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .page{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;padding:44px 46px 30px;
+    box-shadow:0 1px 3px rgba(16,24,40,.06),0 18px 50px -20px rgba(16,24,40,.22)}
+  .hdr{border-bottom:1px solid #eceef3;padding-bottom:22px;margin-bottom:26px}
+  .kicker{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6d5efc;margin-bottom:8px}
+  h1{font-size:32px;letter-spacing:-.025em;font-weight:800;line-height:1.15}
+  .meta{margin-top:8px;font-size:13.5px;color:#8b93a7}
+  .meta .sep{margin:0 8px;color:#d3d7e0}
+  .tldr{background:#f4f3ff;border-left:3px solid #6d5efc;border-radius:0 10px 10px 0;
+    padding:16px 18px;font-size:15px;color:#3b3480;margin-bottom:34px}
+  .tldr strong{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#6d5efc;margin-bottom:5px}
+  .sec{margin-bottom:32px}
+  .sec h2{font-size:16px;font-weight:750;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;
+    padding-bottom:9px;border-bottom:1px solid #eceef3;margin-bottom:14px}
+  .sec h2 .e{font-size:15px}
+  .sec.flag h2{color:#c2410c;border-bottom-color:#fee4d3}
+  .badge{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    background:#fff1e7;color:#c2410c;padding:3px 9px;border-radius:999px;border:1px solid #ffd9c2}
+  ul{list-style:none;margin-bottom:14px}
+  li{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:15px;color:#374151}
+  li::before{content:'';width:6px;height:6px;border-radius:50%;background:#6d5efc;flex:none}
+  .sec.flag li::before{background:#fb7185}
+  li .it{flex:1;min-width:0}
+  .pbar{width:104px;height:6px;border-radius:99px;background:#eceef3;flex:none;overflow:hidden}
+  .pbar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#6d5efc,#22d3ee)}
+  .pct{font-size:12px;font-weight:700;color:#6d5efc;flex:none;width:34px;text-align:right}
+  figure{margin:14px 0 18px;border:1px solid #e6e8ef;border-radius:11px;overflow:hidden;background:#fafbfc}
+  figure img{display:block;width:100%;height:auto}
+  figcaption{font-size:12.5px;color:#8b93a7;padding:9px 13px;border-top:1px solid #eceef3;background:#fff}
+  .ftr{margin-top:36px;padding-top:18px;border-top:1px solid #eceef3;font-size:12px;color:#a8aec0;text-align:center}
+  @media print{body{background:#fff;padding:0}.page{box-shadow:none;padding:0;max-width:none}
+    .sec{break-inside:avoid}figure{break-inside:avoid}}
+  @media(max-width:640px){.page{padding:28px 22px}h1{font-size:25px}
+    li{flex-wrap:wrap}.pbar{width:78px}}`;
+
+    if(!standalone) return `<style>${css}</style>${inner}`;
+    return `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EOD — ${esc(m.name||'Report')}${m.date?` · ${esc(m.date)}`:''}</title>
+<meta name="description" content="${esc(m.tldr).slice(0,150)}">
+<style>${css}</style>
+</head><body>${inner}</body></html>`;
+  }
+
+  /* ================= PREVIEW ================= */
+  function render(){
+    const m = docModel();
+    if(m.empty && !m.name){
+      out.className = 'out';
+      out.innerHTML = '<span class="empty">Start typing on the left — your report writes itself here. Or hit “Load sample” up top.</span>';
+      stats('');
+      return;
+    }
+    if(state.format === 'web'){
+      out.className = 'out web';
+      const f = document.createElement('iframe');
+      f.setAttribute('sandbox','');
+      f.srcdoc = buildHTML();
+      out.innerHTML = '';
+      out.appendChild(f);
+      stats(buildText('plain'));
+      return;
+    }
+    out.className = 'out';
+    const text = buildText(state.format);
+    out.innerHTML = esc(text).split('\n').map(l=>{
+      if(/\[Image:|!\[/.test(l)) return `<span class="img">${l}</span>`;
+      if(/^(\*|#|=|!!|Subject:|[A-Z][A-Z /]{3,}$)/.test(l) || /^&gt;/.test(l)) return `<span class="h">${l}</span>`;
+      if(/^(_|Hi,|Hey,|Good evening,|Best regards|Thanks|— )/.test(l)) return `<span class="m">${l}</span>`;
+      return l;
+    }).join('\n');
+    stats(text);
+  }
+  function stats(text){
+    const items = SECTIONS.reduce((n,s)=>n+allItems(s.k).length,0);
     $('stItems').textContent = items;
-    $('stWords').textContent = words;
-    $('stRead').textContent = Math.max(1, Math.round(words/220*60)) + 's';
+    $('stImgs').textContent = imgCount();
+    $('stWords').textContent = text ? text.trim().split(/\s+/).filter(Boolean).length : 0;
   }
 
-  /* ---------- persistence ---------- */
-  let saveT;
+  /* ================= EDITOR ================= */
+  function buildEditor(){
+    const host = $('sections');
+    host.innerHTML = SECTIONS.map(s=>`
+      <div class="sect" data-sec="${s.k}">
+        <div class="sect-head">
+          <span class="t">${s.emoji} ${s.title} <small>${s.hint}</small></span>
+          <span class="adds">
+            <button class="btn btn-xs" data-add="text" data-sec="${s.k}">+ Text</button>
+            <button class="btn btn-xs" data-add="image" data-sec="${s.k}">+ Image</button>
+          </span>
+        </div>
+        <div class="blocks" id="blk-${s.k}"></div>
+      </div>`).join('');
+
+    host.addEventListener('click', e=>{
+      const add = e.target.closest('[data-add]');
+      if(add){
+        const k = add.dataset.sec;
+        focusedSection = k;
+        if(add.dataset.add === 'text'){
+          state.blocks[k].push({type:'text', value:''});
+          paint(k); save(); render();
+          const tas = $('blk-'+k).querySelectorAll('textarea');
+          tas[tas.length-1]?.focus();
+        } else {
+          $('filePick').click();
+        }
+      }
+    });
+
+    /* drag & drop per section */
+    host.querySelectorAll('.sect').forEach(el=>{
+      const k = el.dataset.sec;
+      el.addEventListener('dragover', e=>{ e.preventDefault(); el.classList.add('drag'); });
+      el.addEventListener('dragleave', ()=> el.classList.remove('drag'));
+      el.addEventListener('drop', e=>{
+        e.preventDefault(); el.classList.remove('drag');
+        focusedSection = k;
+        [...(e.dataTransfer.files||[])].filter(f=>f.type.startsWith('image/')).forEach(f=>addImage(k,f));
+      });
+      el.addEventListener('focusin', ()=>{ focusedSection = k; });
+      el.addEventListener('mouseenter', ()=>{ focusedSection = k; });
+    });
+
+    SECTIONS.forEach(s=>paint(s.k));
+  }
+
+  function paint(k){
+    const host = $('blk-'+k);
+    const arr = state.blocks[k];
+    if(!arr.length){
+      host.innerHTML = `<div class="drop-note">Add a text block or drop / paste a screenshot here</div>`;
+      return;
+    }
+    host.innerHTML = arr.map((b,i)=>{
+      const tools = `<div class="blk-tools">
+        <button class="ibtn" data-mv="-1" data-i="${i}" title="Move up" ${i===0?'disabled':''}>↑</button>
+        <button class="ibtn" data-mv="1"  data-i="${i}" title="Move down" ${i===arr.length-1?'disabled':''}>↓</button>
+        <button class="ibtn del" data-del="${i}" title="Remove">✕</button>
+      </div>`;
+      if(b.type === 'image'){
+        return `<div class="blk">
+          <div class="imgblk">
+            <img src="${b.src}" alt="">
+            <div class="cap"><input type="text" data-cap="${i}" value="${esc(b.caption||'')}" placeholder="Caption (optional)"></div>
+          </div>${tools}</div>`;
+      }
+      return `<div class="blk">
+        <textarea data-txt="${i}" placeholder="One item per line…">${esc(b.value)}</textarea>${tools}</div>`;
+    }).join('');
+
+    host.oninput = e=>{
+      const t = e.target;
+      if(t.dataset.txt !== undefined) arr[+t.dataset.txt].value = t.value;
+      else if(t.dataset.cap !== undefined) arr[+t.dataset.cap].caption = t.value;
+      else return;
+      save(); render();
+    };
+    host.onclick = e=>{
+      const btn = e.target.closest('button'); if(!btn) return;
+      if(btn.dataset.del !== undefined){
+        arr.splice(+btn.dataset.del,1);
+      } else if(btn.dataset.mv !== undefined){
+        const i = +btn.dataset.i, j = i + (+btn.dataset.mv);
+        if(j<0 || j>=arr.length) return;
+        [arr[i],arr[j]] = [arr[j],arr[i]];
+      } else return;
+      paint(k); save(); render();
+    };
+  }
+
+  /* ---------- images: resize, compress, insert ---------- */
+  const MAX_W = 1400, QUALITY = .82;
+  function addImage(k, file){
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, MAX_W / img.width);
+        const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const cx = c.getContext('2d');
+        cx.fillStyle = '#fff'; cx.fillRect(0,0,w,h);
+        cx.drawImage(img,0,0,w,h);
+        state.blocks[k].push({type:'image', src:c.toDataURL('image/jpeg',QUALITY), w, h, caption:''});
+        paint(k); save(); render();
+        toast('Image added ✓');
+      };
+      img.onerror = () => toast("Couldn't read that image", true);
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
+
+  $('filePick').addEventListener('change', e=>{
+    [...e.target.files].filter(f=>f.type.startsWith('image/')).forEach(f=>addImage(focusedSection,f));
+    e.target.value = '';
+  });
+
+  /* paste screenshots anywhere in the app */
+  document.addEventListener('paste', e=>{
+    const tag = document.activeElement?.tagName;
+    const items = [...(e.clipboardData?.items||[])].filter(i=>i.type.startsWith('image/'));
+    if(!items.length) return;
+    if(!document.getElementById('generator').contains(document.activeElement) && tag!=='BODY') return;
+    e.preventDefault();
+    items.forEach(i=>{ const f = i.getAsFile(); if(f) addImage(focusedSection, f); });
+  });
+
+  /* ================= PERSISTENCE ================= */
+  let saveT, quotaWarned = false;
   function save(){
     clearTimeout(saveT);
     saveT = setTimeout(()=>{
-      const data = {format, tone, mood};
-      Object.keys(F).forEach(k => data[k] = F[k].value);
-      try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){}
-      const s = $('stSaved');
-      s.textContent = 'Saved ✓';
-      setTimeout(()=>{ s.textContent=''; }, 1600);
-    }, 500);
+      try{
+        localStorage.setItem(KEY, JSON.stringify(state));
+        const s = $('stSaved'); s.textContent = 'Saved ✓'; s.style.color = 'var(--good)';
+        setTimeout(()=>{ s.textContent=''; }, 1600);
+        quotaWarned = false;
+      }catch(err){
+        const s = $('stSaved');
+        s.textContent = 'Too large to auto-save — export before closing';
+        s.style.color = 'var(--warn)';
+        if(!quotaWarned){ toast('Images exceed local storage. Your report still exports fine — just export before closing the tab.', true); quotaWarned = true; }
+      }
+    }, 600);
   }
 
   function load(){
-    let data = null;
-    try{ data = JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
-    if(!data) return false;
-    Object.keys(F).forEach(k => { if(data[k]!=null) F[k].value = data[k]; });
-    if(data.format) setSeg('segFormat','f', format = data.format);
-    if(data.tone)   setSeg('segTone','t', tone = data.tone);
-    if(data.mood){ mood = data.mood; setMood(mood); }
-    return true;
+    let d = null;
+    try{ d = JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){}
+    if(d){ Object.assign(state, d); state.blocks = Object.assign({done:[],wip:[],block:[],next:[]}, d.blocks||{}); return true; }
+    /* migrate v1 (plain textareas) */
+    try{
+      const o = JSON.parse(localStorage.getItem(OLD) || 'null');
+      if(o){
+        state.name=o.name||''; state.team=o.team||''; state.hours=o.hours||''; state.date=o.date||'';
+        state.format = o.format==='slack'?'slack':(o.format||'web');
+        state.tone=o.tone||'crisp'; state.mood=o.mood||'solid';
+        ['done','wip','block','next'].forEach(k=>{ if(o[k]) state.blocks[k]=[{type:'text',value:o[k]}]; });
+        return true;
+      }
+    }catch(e){}
+    return false;
   }
 
-  function setSeg(id, attr, val){
-    $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset[attr]===val));
-    $('fmtLabel').textContent = cap(format) + ' format';
+  /* ================= EXPORTS ================= */
+  function toast(msg, warn){
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('warn', !!warn);
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), warn ? 4200 : 1900);
   }
-  function setMood(v){
-    document.querySelectorAll('#mood button').forEach(x => x.classList.toggle('on', x.dataset.m===v));
+  function download(blob, name){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
   }
-
-  /* ---------- events ---------- */
-  Object.values(F).forEach(el => el.addEventListener('input', ()=>{ build(); save(); }));
-
-  $('segFormat').addEventListener('click', e=>{
-    const btn = e.target.closest('button'); if(!btn) return;
-    format = btn.dataset.f; setSeg('segFormat','f',format); build(); save();
-  });
-  $('segTone').addEventListener('click', e=>{
-    const btn = e.target.closest('button'); if(!btn) return;
-    tone = btn.dataset.t; setSeg('segTone','t',tone); build(); save();
-  });
-  $('mood').addEventListener('click', e=>{
-    const btn = e.target.closest('button'); if(!btn) return;
-    mood = btn.dataset.m; setMood(mood); build(); save();
-  });
-
-  function toast(msg){
-    const t = $('toast'); t.textContent = msg; t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'), 1900);
-  }
+  const nothing = () => { toast('Nothing to export yet'); return true; };
 
   $('btnCopy').addEventListener('click', async ()=>{
-    const text = build();
-    if(!text) return toast('Nothing to copy yet');
-    try{
-      await navigator.clipboard.writeText(text);
-    }catch(e){
+    const isWeb = state.format === 'web';
+    const text = isWeb ? buildHTML() : buildText(state.format);
+    if(!text) return nothing();
+    try{ await navigator.clipboard.writeText(text); }
+    catch(e){
       const ta = document.createElement('textarea');
       ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-      document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); ta.remove();
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
     }
-    toast('Copied — go paste it ✓');
+    toast(isWeb ? 'HTML copied ✓' : 'Copied — go paste it ✓');
+  });
+
+  $('btnHtml').addEventListener('click', ()=>{
+    const html = buildHTML();
+    if(!html) return nothing();
+    download(new Blob([html], {type:'text/html'}), fileStem() + '.html');
+    toast('Web page downloaded — open or host it anywhere ✓');
   });
 
   $('btnDl').addEventListener('click', ()=>{
-    const text = build();
-    if(!text) return toast('Nothing to download yet');
-    const blob = new Blob([text], {type:'text/markdown'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileStem() + '.md';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast('Downloaded ✓');
+    const text = buildText('markdown');
+    if(!text) return nothing();
+    download(new Blob([text], {type:'text/markdown'}), fileStem() + '.md');
+    toast('Markdown downloaded ✓');
   });
 
-  /* ---------- document model shared by Word + PDF ---------- */
-  function docModel(){
-    const d = lines(F.done.value), w = lines(F.wip.value),
-          b = lines(F.block.value), n = lines(F.next.value);
-    return {
-      name: F.name.value.trim(),
-      team: F.team.value.trim(),
-      hours: F.hours.value.trim(),
-      date: prettyDate(F.date.value),
-      tldr: summarize(d,w,b,n),
-      empty: !(d.length+w.length+b.length+n.length),
-      sections: [
-        {title:'Blockers / needs',   items:b, flag:true},
-        {title:'Shipped / completed',items:d},
-        {title:'In progress',        items:w, wip:true},
-        {title:"Tomorrow's focus",   items:n}
-      ].filter(s => s.items.length)
-    };
-  }
-  const fileStem = () => `EOD-${(F.name.value.trim()||'report').replace(/\s+/g,'-')}-${F.date.value||'today'}`;
+  $('btnMail').addEventListener('click', ()=>{
+    const text = buildText('email');
+    if(!text) return nothing();
+    const subj = `EOD — ${state.name.trim()||'Update'}${state.date?` — ${prettyDate(state.date)}`:''}`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(text.replace(/^Subject:.*\n\n?/,''))}`;
+  });
 
-  /* ---------- WORD (.doc — opens natively in Word, Pages, Docs) ---------- */
+  /* ---- Word (.doc) ---- */
   $('btnWord').addEventListener('click', ()=>{
     const m = docModel();
-    if(m.empty && !m.name) return toast('Nothing to download yet');
-    const meta = [m.date, m.team, m.hours ? m.hours+'h logged' : ''].filter(Boolean).join(' &nbsp;·&nbsp; ');
+    if(m.empty && !m.name) return nothing();
+    const meta = [m.date, m.team, m.hours?`${m.hours}h logged`:''].filter(Boolean).join(' &nbsp;·&nbsp; ');
 
-    const body = m.sections.map(s => {
-      const items = s.items.map(it=>{
-        if(s.wip){
-          const {text,pct} = wipLine(it);
-          return pct===null
-            ? `<li>${esc(cap(text))}</li>`
-            : `<li>${esc(cap(text))} <span style="color:#6d5efc;font-weight:bold">— ${pct}%</span></li>`;
+    const body = m.sections.map(s=>{
+      const flag = s.k==='block';
+      const inner = s.blocks.map(b=>{
+        if(b.type==='image'){
+          return `<p style="margin:10pt 0 4pt"><img src="${b.src}" width="520"/></p>
+                  ${b.caption ? `<p style="font-size:9pt;color:#8b93a7;margin:0 0 12pt">${esc(b.caption)}</p>` : ''}`;
         }
-        return `<li>${esc(cap(it))}</li>`;
+        const items = lines(b.value).map(it=>{
+          if(s.k==='wip'){
+            const {text,pct} = wipLine(it);
+            if(pct!==null) return `<li>${esc(cap(text))} <b style="color:#6d5efc">— ${pct}%</b></li>`;
+          }
+          return `<li>${esc(cap(it))}</li>`;
+        }).join('');
+        return items ? `<ul style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1f2937;line-height:1.5">${items}</ul>` : '';
       }).join('');
-      const color = s.flag ? '#c2410c' : '#111827';
-      return `<h2 style="font-family:Calibri,Arial,sans-serif;font-size:13pt;color:${color};
+      return `<h2 style="font-family:Calibri,Arial,sans-serif;font-size:13pt;color:${flag?'#c2410c':'#111827'};
                 border-bottom:1px solid #e5e7eb;padding-bottom:4pt;margin:18pt 0 8pt">
-                ${s.flag?'⚠ ':''}${s.title}</h2>
-              <ul style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1f2937;line-height:1.5">${items}</ul>`;
+                ${flag?'⚠ ':''}${esc(s.title)}</h2>${inner}`;
     }).join('');
 
-    const html = `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:w="urn:schemas-microsoft-com:office:word"
-      xmlns="http://www.w3.org/TR/REC-html40">
+    const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><title>${esc(fileStem())}</title>
 <xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml>
-<style>@page{size:A4;margin:2cm} body{font-family:Calibri,Arial,sans-serif}</style>
-</head>
+<style>@page{size:A4;margin:2cm}body{font-family:Calibri,Arial,sans-serif}</style></head>
 <body>
   <h1 style="font-size:20pt;color:#111827;margin:0 0 4pt">End of Day Report</h1>
   <p style="font-size:10pt;color:#6b7280;margin:0 0 2pt">${esc(m.name||'')}</p>
   <p style="font-size:9.5pt;color:#9ca3af;margin:0 0 14pt">${meta}</p>
-  <table cellpadding="10" style="width:100%;background:#f4f3ff;border-left:3pt solid #6d5efc;margin-bottom:6pt">
-    <tr><td style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#3730a3">
-      <b>Summary:</b> ${esc(m.tldr)}</td></tr>
+  <table cellpadding="10" style="width:100%;background:#f4f3ff;border-left:3pt solid #6d5efc">
+    <tr><td style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#3730a3"><b>Summary:</b> ${esc(m.tldr)}</td></tr>
   </table>
   ${body}
-  <p style="font-size:8.5pt;color:#9ca3af;margin-top:24pt;border-top:1px solid #e5e7eb;padding-top:6pt">
-    Generated with EODly</p>
+  <p style="font-size:8.5pt;color:#9ca3af;margin-top:24pt;border-top:1px solid #e5e7eb;padding-top:6pt">Generated with EODly</p>
 </body></html>`;
 
-    const blob = new Blob(['﻿', html], {type:'application/msword'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileStem() + '.doc';
-    a.click();
-    URL.revokeObjectURL(a.href);
+    download(new Blob(['﻿', html], {type:'application/msword'}), fileStem() + '.doc');
     toast('Word file downloaded ✓');
   });
 
-  /* ---------- PDF (lazy-loads jsPDF; falls back to print if offline) ---------- */
-  let jsPDFReady = null;
+  /* ---- PDF ---- */
+  let pdfLoading = null;
   function loadJsPDF(){
     if(window.jspdf) return Promise.resolve(true);
-    if(jsPDFReady) return jsPDFReady;
-    jsPDFReady = new Promise(res=>{
+    if(pdfLoading) return pdfLoading;
+    pdfLoading = new Promise(res=>{
       const s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-      s.onload = () => res(true);
-      s.onerror = () => res(false);
+      s.onload = ()=>res(true);
+      s.onerror = ()=>res(false);
       document.head.appendChild(s);
     });
-    return jsPDFReady;
+    return pdfLoading;
   }
 
   $('btnPdf').addEventListener('click', async ()=>{
     const m = docModel();
-    if(m.empty && !m.name) return toast('Nothing to download yet');
+    if(m.empty && !m.name) return nothing();
 
-    const btn = $('btnPdf'), label = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Building PDF…';
+    const btn = $('btnPdf'), lbl = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Building…';
     const ok = await loadJsPDF();
-    btn.disabled = false; btn.textContent = label;
-
-    if(!ok){
-      toast('Offline — using print-to-PDF instead');
-      window.print();
-      return;
-    }
+    btn.disabled = false; btn.textContent = lbl;
+    if(!ok){ toast("Couldn't load the PDF engine (offline?). Try the HTML or Word export.", true); return; }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({unit:'pt', format:'a4'});
-    const M = 56, W = 595 - M*2;
+    const M = 56, W = 595 - M*2, BOTTOM = 780;
     let y = 64;
-
-    const page = h => { if(y + h > 780){ doc.addPage(); y = 64; } };
+    const need = h => { if(y + h > BOTTOM){ doc.addPage(); y = 64; } };
 
     doc.setFont('helvetica','bold').setFontSize(20).setTextColor(17,24,39);
     doc.text('End of Day Report', M, y); y += 22;
-
-    if(m.name){
-      doc.setFont('helvetica','normal').setFontSize(11).setTextColor(107,114,128);
-      doc.text(m.name, M, y); y += 14;
-    }
-    const meta = [m.date, m.team, m.hours ? m.hours+'h logged' : ''].filter(Boolean).join('  ·  ');
-    if(meta){
-      doc.setFontSize(9.5).setTextColor(156,163,175);
-      doc.text(meta, M, y); y += 10;
-    }
+    if(m.name){ doc.setFont('helvetica','normal').setFontSize(11).setTextColor(107,114,128).text(m.name, M, y); y += 14; }
+    const meta = [m.date, m.team, m.hours?`${m.hours}h logged`:''].filter(Boolean).join('  ·  ');
+    if(meta){ doc.setFontSize(9.5).setTextColor(156,163,175).text(meta, M, y); y += 10; }
     y += 12;
 
-    /* summary callout */
     const sum = doc.setFontSize(10.5).splitTextToSize(m.tldr, W - 28);
-    const boxH = sum.length * 14 + 20;
+    const boxH = sum.length*14 + 20;
     doc.setFillColor(244,243,255).rect(M, y, W, boxH, 'F');
     doc.setFillColor(109,94,252).rect(M, y, 3, boxH, 'F');
-    doc.setFont('helvetica','normal').setTextColor(55,48,163);
-    doc.text(sum, M + 14, y + 16);
-    y += boxH + 24;
+    doc.setFont('helvetica','normal').setTextColor(55,48,163).text(sum, M+14, y+16);
+    y += boxH + 26;
 
     m.sections.forEach(s=>{
-      page(48);
+      const flag = s.k === 'block';
+      need(52);
       doc.setFont('helvetica','bold').setFontSize(12);
-      if(s.flag) doc.setTextColor(194,65,12); else doc.setTextColor(17,24,39);
-      doc.text((s.flag?'! ':'') + s.title, M, y); y += 7;
-      doc.setDrawColor(229,231,235).setLineWidth(.7).line(M, y, M + W, y); y += 16;
+      flag ? doc.setTextColor(194,65,12) : doc.setTextColor(17,24,39);
+      doc.text((flag?'! ':'') + s.title, M, y); y += 7;
+      doc.setDrawColor(229,231,235).setLineWidth(.7).line(M, y, M+W, y); y += 16;
 
-      s.items.forEach(it=>{
-        let txt = cap(it), pct = null;
-        if(s.wip){ const p = wipLine(it); txt = cap(p.text); pct = p.pct; }
-        const wrapped = doc.setFont('helvetica','normal').setFontSize(10.5)
-                           .splitTextToSize(txt, W - 34);
-        page(wrapped.length * 14 + 8);
-        doc.setFillColor(s.flag ? 251 : 109, s.flag ? 113 : 94, s.flag ? 133 : 252)
-           .circle(M + 4, y - 3.5, 2, 'F');
-        doc.setTextColor(31,41,55).text(wrapped, M + 16, y);
-        y += wrapped.length * 14;
-
-        if(pct !== null){
-          const bw = 90;
-          doc.setFillColor(229,231,235).roundedRect(M + 16, y - 4, bw, 5, 2.5, 2.5, 'F');
-          doc.setFillColor(109,94,252).roundedRect(M + 16, y - 4, bw * pct/100, 5, 2.5, 2.5, 'F');
-          doc.setFontSize(8.5).setTextColor(109,94,252).text(pct + '%', M + 16 + bw + 8, y);
+      s.blocks.forEach(b=>{
+        if(b.type === 'image'){
+          const dw = W, dh = Math.min(430, b.h * (dw / b.w));
+          const fw = dh === 430 ? b.w * (430/b.h) : dw;
+          need(dh + 22);
+          try{ doc.addImage(b.src, 'JPEG', M, y, fw, dh); }catch(e){}
+          y += dh + 6;
+          if(b.caption){
+            doc.setFont('helvetica','italic').setFontSize(8.5).setTextColor(139,147,167);
+            doc.text(b.caption, M, y + 6);
+            y += 12;
+          }
           y += 12;
+          return;
         }
+        lines(b.value).forEach(it=>{
+          let txt = cap(it), pct = null;
+          if(s.k === 'wip'){ const p = wipLine(it); txt = cap(p.text); pct = p.pct; }
+          const wrapped = doc.setFont('helvetica','normal').setFontSize(10.5).splitTextToSize(txt, W - 34);
+          need(wrapped.length*14 + 10);
+          flag ? doc.setFillColor(251,113,133) : doc.setFillColor(109,94,252);
+          doc.circle(M+4, y-3.5, 2, 'F');
+          doc.setTextColor(31,41,55).text(wrapped, M+16, y);
+          y += wrapped.length*14;
+          if(pct !== null){
+            const bw = 90;
+            doc.setFillColor(236,238,243).roundedRect(M+16, y-4, bw, 5, 2.5, 2.5, 'F');
+            doc.setFillColor(109,94,252).roundedRect(M+16, y-4, bw*pct/100, 5, 2.5, 2.5, 'F');
+            doc.setFontSize(8.5).setTextColor(109,94,252).text(pct+'%', M+16+bw+8, y);
+            y += 12;
+          }
+          y += 4;
+        });
         y += 4;
       });
-      y += 12;
+      y += 10;
     });
 
     const n = doc.internal.getNumberOfPages();
     for(let i=1;i<=n;i++){
-      doc.setPage(i).setFontSize(8.5).setTextColor(156,163,175);
+      doc.setPage(i).setFont('helvetica','normal').setFontSize(8.5).setTextColor(156,163,175);
       doc.text('Generated with EODly', M, 800);
-      doc.text(`${i} / ${n}`, 595 - M, 800, {align:'right'});
+      doc.text(`${i} / ${n}`, 595-M, 800, {align:'right'});
     }
-
     doc.save(fileStem() + '.pdf');
     toast('PDF downloaded ✓');
   });
 
-  $('btnMail').addEventListener('click', ()=>{
-    const text = build();
-    if(!text) return toast('Nothing to send yet');
-    const subj = `EOD — ${F.name.value.trim()||'Update'}${F.date.value?` — ${prettyDate(F.date.value)}`:''}`;
-    const body = text.replace(/^Subject:.*\n\n?/,'');
-    window.location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+  /* ================= WIRING ================= */
+  Object.entries(F).forEach(([k,el])=>{
+    el.addEventListener('input', ()=>{ state[k] = el.value; save(); render(); });
+  });
+  function syncFields(){ Object.entries(F).forEach(([k,el]) => el.value = state[k] || ''); }
+
+  function setSeg(id, attr, val){
+    $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset[attr] === val));
+    $('fmtLabel').textContent = state.format === 'web' ? 'Web page' : cap(state.format) + ' format';
+  }
+  $('segFormat').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    state.format = b.dataset.f; setSeg('segFormat','f',state.format); save(); render();
+  });
+  $('segTone').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    state.tone = b.dataset.t; setSeg('segTone','t',state.tone); save(); render();
+  });
+  $('mood').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    state.mood = b.dataset.m;
+    document.querySelectorAll('#mood button').forEach(x=>x.classList.toggle('on', x.dataset.m===state.mood));
+    save(); render();
   });
 
   $('btnSample').addEventListener('click', ()=>{
-    F.name.value  = 'Alex Rivera';
-    F.team.value  = 'Growth · Q3 Onboarding';
-    F.hours.value = '7.5';
-    F.done.value  = 'shipped v2 pricing page copy — live at 3pm\nfixed the checkout timeout bug (#412), root cause was a stale redis lock\nonboarding call with Acme, 45 min — they want SSO before signing\nreviewed 3 PRs for the mobile team';
-    F.wip.value   = 'stripe webhook refactor — 60%\nQ3 roadmap draft — 30%\nmigrating analytics events to the new schema';
-    F.block.value = 'need staging DB creds from DevOps — asked Monday, still nothing\nlegal review on the new ToS is 3 days overdue, holding the launch';
-    F.next.value  = 'finish + ship the webhook refactor\nprep Thursday QBR deck\nchase DevOps on creds first thing';
-    mood = 'solid'; setMood(mood);
-    build(); save(); toast('Sample loaded ✓');
+    state.name = 'Alex Rivera';
+    state.team = 'Growth · Q3 Onboarding';
+    state.hours = '7.5';
+    state.blocks = {
+      done:[{type:'text', value:'shipped v2 pricing page copy — live at 3pm\nfixed the checkout timeout bug (#412), root cause was a stale redis lock\nonboarding call with Acme, 45 min — they want SSO before signing\nreviewed 3 PRs for the mobile team'}],
+      wip:[{type:'text', value:'stripe webhook refactor — 60%\nQ3 roadmap draft — 30%\nmigrating analytics events to the new schema'}],
+      block:[{type:'text', value:'need staging DB creds from DevOps — asked Monday, still nothing\nlegal review on the new ToS is 3 days overdue, holding the launch'}],
+      next:[{type:'text', value:'finish + ship the webhook refactor\nprep Thursday QBR deck\nchase DevOps on creds first thing'}]
+    };
+    state.mood = 'solid';
+    document.querySelectorAll('#mood button').forEach(x=>x.classList.toggle('on', x.dataset.m==='solid'));
+    syncFields(); SECTIONS.forEach(s=>paint(s.k)); save(); render();
+    toast('Sample loaded — now try “+ Image” in any section ✓');
   });
 
   $('btnClear').addEventListener('click', ()=>{
-    if(!confirm('Clear everything, including your saved entries?')) return;
-    Object.values(F).forEach(el => { if(el.type!=='date') el.value=''; });
-    try{ localStorage.removeItem(KEY); }catch(e){}
-    build(); toast('Cleared');
+    if(!confirm('Clear everything, including images and saved entries?')) return;
+    state.name = state.team = state.hours = '';
+    state.blocks = {done:[],wip:[],block:[],next:[]};
+    try{ localStorage.removeItem(KEY); localStorage.removeItem(OLD); }catch(e){}
+    syncFields(); SECTIONS.forEach(s=>paint(s.k)); render();
+    toast('Cleared');
   });
 
-  /* ---------- init ---------- */
-  const today = new Date();
-  const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-  F.date.value = iso;
-  $('yr').textContent = today.getFullYear();
+  /* ---- init ---- */
+  const t = new Date();
+  const iso = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  $('yr').textContent = t.getFullYear();
 
-  const restored = load();
-  if(!F.date.value) F.date.value = iso;
-  build();
-  if(!restored){ setSeg('segFormat','f',format); setSeg('segTone','t',tone); }
+  load();
+  if(!state.date) state.date = iso;
+  syncFields();
+  buildEditor();
+  setSeg('segFormat','f',state.format);
+  setSeg('segTone','t',state.tone);
+  document.querySelectorAll('#mood button').forEach(x=>x.classList.toggle('on', x.dataset.m===state.mood));
+  render();
 
-  /* nav border + reveal */
   const nav = $('nav');
   addEventListener('scroll', ()=> nav.classList.toggle('stuck', scrollY > 12));
-  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.12});
-  document.querySelectorAll('.rv').forEach(el => io.observe(el));
-
-  /* cmd/ctrl+enter to copy */
-  addEventListener('keydown', e => {
+  const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.12});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+  addEventListener('keydown', e=>{
     if((e.metaKey||e.ctrlKey) && e.key === 'Enter'){ e.preventDefault(); $('btnCopy').click(); }
   });
 })();
