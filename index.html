@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EODly — Write your end-of-day report in 60 seconds</title>
+<meta name="description" content="Dump your day. Get a clean, manager-ready EOD report. Formatted for Slack, email, or PDF. Free, private, works offline.">
+<style>
+  :root{
+    --bg:#07080c;
+    --bg-2:#0c0e14;
+    --panel:#10131b;
+    --panel-2:#151926;
+    --line:#1e2434;
+    --line-2:#2a3145;
+    --txt:#eef1f7;
+    --txt-2:#9aa3b8;
+    --txt-3:#646d84;
+    --accent:#6d5efc;
+    --accent-2:#22d3ee;
+    --good:#34d399;
+    --warn:#fbbf24;
+    --bad:#fb7185;
+    --radius:14px;
+    --shadow:0 20px 60px -20px rgba(0,0,0,.8);
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--txt);
+    font-family:var(--font);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  ::selection{background:var(--accent);color:#fff}
+
+  /* ---------- ambient bg ---------- */
+  .glow{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(600px 400px at 15% -5%, rgba(109,94,252,.18), transparent 60%),
+      radial-gradient(700px 500px at 90% 0%, rgba(34,211,238,.10), transparent 60%),
+      radial-gradient(900px 600px at 50% 100%, rgba(109,94,252,.07), transparent 65%);
+  }
+  .grid-bg{
+    position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(ellipse 80% 50% at 50% 0%,#000 20%,transparent 75%);
+    -webkit-mask-image:radial-gradient(ellipse 80% 50% at 50% 0%,#000 20%,transparent 75%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    background:rgba(7,8,12,.72);
+    border-bottom:1px solid transparent;
+    transition:border-color .3s;
+  }
+  nav.stuck{border-bottom-color:var(--line)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.02em}
+  .logo-mark{
+    width:30px;height:30px;border-radius:8px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;font-size:15px;
+    box-shadow:0 4px 16px -4px rgba(109,94,252,.7);
+  }
+  .nav-links{display:flex;align-items:center;gap:28px}
+  .nav-links a{font-size:14px;color:var(--txt-2);transition:color .18s}
+  .nav-links a:hover{color:var(--txt)}
+  @media(max-width:760px){.nav-links a:not(.btn){display:none}}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;
+    border:1px solid var(--line-2);background:var(--panel-2);color:var(--txt);
+    cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap;
+  }
+  .btn:hover{border-color:#3b4463;background:#1a1f31;transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--accent),#8b7dff);
+    border-color:transparent;color:#fff;
+    box-shadow:0 8px 24px -8px rgba(109,94,252,.8);
+  }
+  .btn-primary:hover{background:linear-gradient(135deg,#7d6fff,#9a8dff);box-shadow:0 12px 30px -8px rgba(109,94,252,.9)}
+  .btn-lg{padding:14px 26px;font-size:15px;border-radius:12px}
+  .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* ---------- hero ---------- */
+  header{padding:92px 0 70px;text-align:center}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:6px 14px;border-radius:999px;font-size:13px;color:var(--txt-2);
+    border:1px solid var(--line-2);background:rgba(21,25,38,.6);margin-bottom:26px;
+  }
+  .pill b{color:var(--txt);font-weight:600}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  h1{
+    font-size:clamp(38px,6.2vw,66px);
+    line-height:1.05;letter-spacing:-.035em;font-weight:800;
+    margin-bottom:22px;
+  }
+  .grad{
+    background:linear-gradient(120deg,var(--accent-2) 0%,#a89bff 45%,var(--accent) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{
+    font-size:clamp(16px,2vw,19px);color:var(--txt-2);
+    max-width:620px;margin:0 auto 34px;line-height:1.65;
+  }
+  .hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+  .micro{font-size:13px;color:var(--txt-3)}
+  .micro b{color:var(--txt-2);font-weight:600}
+
+  /* ---------- app / generator ---------- */
+  section{padding:80px 0;position:relative}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 48px}
+  .eyebrow{
+    font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent-2);margin-bottom:14px;
+  }
+  h2{font-size:clamp(28px,4vw,42px);letter-spacing:-.03em;font-weight:800;line-height:1.15;margin-bottom:14px}
+  .sec-head p{color:var(--txt-2);font-size:16.5px}
+
+  .app{
+    background:linear-gradient(180deg,var(--panel),var(--bg-2));
+    border:1px solid var(--line);border-radius:20px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .app-bar{
+    display:flex;align-items:center;gap:10px;
+    padding:14px 18px;border-bottom:1px solid var(--line);
+    background:rgba(0,0,0,.25);
+  }
+  .tl{display:flex;gap:7px}
+  .tl i{width:11px;height:11px;border-radius:50%;display:block}
+  .tl i:nth-child(1){background:#ff5f57}.tl i:nth-child(2){background:#febc2e}.tl i:nth-child(3){background:#28c840}
+  .app-title{font-size:13px;color:var(--txt-3);margin-left:8px;font-family:var(--mono)}
+  .app-bar .spacer{flex:1}
+
+  .app-body{display:grid;grid-template-columns:1fr 1fr;min-height:640px}
+  @media(max-width:940px){.app-body{grid-template-columns:1fr}}
+  .pane{padding:26px}
+  .pane-l{border-right:1px solid var(--line)}
+  @media(max-width:940px){.pane-l{border-right:none;border-bottom:1px solid var(--line)}}
+
+  .pane-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .pane-head h3{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .pane-head .hint{font-size:12px;color:var(--txt-3)}
+
+  .field{margin-bottom:18px}
+  label{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--txt-2);margin-bottom:7px}
+  label .tag{font-size:11px;color:var(--txt-3);font-weight:500}
+  input[type=text],input[type=date],textarea,select{
+    width:100%;padding:11px 13px;border-radius:10px;
+    border:1px solid var(--line);background:#0a0c12;color:var(--txt);
+    font-family:inherit;font-size:14px;transition:border-color .18s,box-shadow .18s;resize:vertical;
+  }
+  input:focus,textarea:focus,select:focus{
+    outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(109,94,252,.16);
+  }
+  textarea{line-height:1.6;min-height:92px}
+  textarea::placeholder,input::placeholder{color:#4a5268}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  .seg{display:flex;gap:6px;background:#0a0c12;border:1px solid var(--line);border-radius:10px;padding:4px}
+  .seg button{
+    flex:1;padding:8px 6px;border:none;background:transparent;color:var(--txt-2);
+    font-family:inherit;font-size:12.5px;font-weight:600;border-radius:7px;cursor:pointer;transition:all .16s;
+  }
+  .seg button:hover{color:var(--txt)}
+  .seg button.on{background:var(--accent);color:#fff;box-shadow:0 3px 12px -3px rgba(109,94,252,.8)}
+
+  .mood{display:flex;gap:8px}
+  .mood button{
+    flex:1;padding:9px 4px;border-radius:9px;border:1px solid var(--line);
+    background:#0a0c12;cursor:pointer;font-size:18px;transition:all .16s;line-height:1;
+  }
+  .mood button:hover{border-color:var(--line-2);transform:translateY(-2px)}
+  .mood button.on{border-color:var(--accent);background:rgba(109,94,252,.14);box-shadow:0 0 0 3px rgba(109,94,252,.12)}
+
+  /* output */
+  .out-wrap{position:relative;height:100%;display:flex;flex-direction:column}
+  .out{
+    flex:1;background:#0a0c12;border:1px solid var(--line);border-radius:12px;
+    padding:20px;font-family:var(--mono);font-size:13px;line-height:1.75;
+    color:#cdd4e3;white-space:pre-wrap;word-break:break-word;
+    overflow-y:auto;max-height:520px;min-height:300px;
+  }
+  .out::-webkit-scrollbar{width:8px}
+  .out::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
+  .out .h{color:#fff;font-weight:700}
+  .out .m{color:var(--accent-2)}
+  .out .empty{color:var(--txt-3);font-style:italic;font-family:var(--font)}
+  .out-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+  .stats{display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--txt-3)}
+  .stats span b{color:var(--txt-2)}
+
+  .toast{
+    position:fixed;bottom:28px;left:50%;transform:translate(-50%,20px);
+    background:var(--good);color:#04120c;font-weight:700;font-size:14px;
+    padding:12px 22px;border-radius:11px;z-index:200;
+    opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 12px 40px -8px rgba(52,211,153,.6);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- features ---------- */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:900px){.cards{grid-template-columns:1fr}}
+  .card{
+    background:linear-gradient(180deg,var(--panel),rgba(12,14,20,.5));
+    border:1px solid var(--line);border-radius:var(--radius);padding:26px;
+    transition:transform .22s,border-color .22s;
+  }
+  .card:hover{transform:translateY(-4px);border-color:var(--line-2)}
+  .card .ico{
+    width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
+    background:rgba(109,94,252,.12);border:1px solid rgba(109,94,252,.28);
+    font-size:19px;margin-bottom:16px;
+  }
+  .card h3{font-size:16.5px;font-weight:700;margin-bottom:8px;letter-spacing:-.01em}
+  .card p{font-size:14.5px;color:var(--txt-2);line-height:1.65}
+
+  /* ---------- steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative}
+  @media(max-width:900px){.steps{grid-template-columns:1fr;gap:28px}}
+  .step{padding:0 24px;text-align:center;position:relative}
+  .step:not(:last-child)::after{
+    content:'';position:absolute;top:26px;right:-16px;width:32px;height:1px;
+    background:linear-gradient(90deg,var(--line-2),transparent);
+  }
+  @media(max-width:900px){.step::after{display:none}}
+  .step .n{
+    width:52px;height:52px;margin:0 auto 18px;border-radius:14px;
+    display:grid;place-items:center;font-weight:800;font-size:19px;
+    background:linear-gradient(135deg,rgba(109,94,252,.2),rgba(34,211,238,.12));
+    border:1px solid var(--line-2);color:var(--accent-2);
+  }
+  .step h3{font-size:16px;margin-bottom:8px;font-weight:700}
+  .step p{font-size:14.5px;color:var(--txt-2)}
+
+  /* ---------- faq ---------- */
+  .faq{max-width:720px;margin:0 auto}
+  details{border-bottom:1px solid var(--line);padding:20px 0}
+  summary{
+    cursor:pointer;font-weight:650;font-size:16px;list-style:none;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:'+';color:var(--accent-2);font-size:21px;font-weight:400;transition:transform .2s}
+  details[open] summary::after{transform:rotate(45deg)}
+  details p{margin-top:12px;color:var(--txt-2);font-size:15px;line-height:1.7}
+
+  /* ---------- cta ---------- */
+  .cta{
+    text-align:center;padding:64px 32px;border-radius:22px;
+    background:
+      radial-gradient(600px 300px at 50% 0%, rgba(109,94,252,.22), transparent 70%),
+      linear-gradient(180deg,var(--panel),var(--bg-2));
+    border:1px solid var(--line-2);
+  }
+  .cta h2{margin-bottom:12px}
+  .cta p{color:var(--txt-2);margin-bottom:28px;font-size:16.5px}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;margin-top:80px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--txt-3)}
+  .foot a:hover{color:var(--txt-2)}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+  .rv.in{opacity:1;transform:none}
+
+  @media print{
+    body{background:#fff;color:#000}
+    nav,header,.glow,.grid-bg,section:not(#generator),footer,.out-actions,.pane-l,.app-bar,.sec-head{display:none!important}
+    .app,.app-body,.pane{border:none;box-shadow:none;padding:0;background:#fff}
+    .out{background:#fff;color:#000;border:none;max-height:none;font-family:var(--font);font-size:13px;white-space:pre-wrap}
+    .out .h{color:#000}.out .m{color:#444}
+    .stats{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="grid-bg"></div>
+
+<nav id="nav">
+  <div class="wrap nav-in">
+    <div class="logo"><span class="logo-mark">🌙</span> EODly</div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <a href="#generator" class="btn btn-primary btn-sm">Write my EOD →</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <div class="pill"><span class="dot"></span> <b>Free forever.</b> No signup, no API key, no data leaves your browser.</div>
+    <h1>Your end-of-day report,<br><span class="grad">written before you close the laptop.</span></h1>
+    <p class="sub">Dump today's tasks as messy bullets. Get back a clean, manager-ready EOD — formatted for Slack, email, or PDF — in about sixty seconds.</p>
+    <div class="hero-cta">
+      <a href="#generator" class="btn btn-primary btn-lg">Generate my EOD — free</a>
+      <a href="#how" class="btn btn-lg">See how it works</a>
+    </div>
+    <p class="micro">Loads a <b>sample report</b> so you can see the output before typing a word.</p>
+  </div>
+</header>
+
+<!-- ============ GENERATOR ============ -->
+<section id="generator" style="padding-top:20px">
+  <div class="wrap">
+    <div class="app rv">
+      <div class="app-bar">
+        <div class="tl"><i></i><i></i><i></i></div>
+        <span class="app-title">eod-report.md</span>
+        <div class="spacer"></div>
+        <button class="btn btn-sm" id="btnSample">Load sample</button>
+        <button class="btn btn-sm" id="btnClear">Clear</button>
+      </div>
+
+      <div class="app-body">
+        <!-- INPUT -->
+        <div class="pane pane-l">
+          <div class="pane-head">
+            <h3>Your day, unfiltered</h3>
+            <span class="hint">One item per line</span>
+          </div>
+
+          <div class="field row">
+            <div>
+              <label>Your name</label>
+              <input type="text" id="fName" placeholder="Alex Rivera">
+            </div>
+            <div>
+              <label>Date</label>
+              <input type="date" id="fDate">
+            </div>
+          </div>
+
+          <div class="field row">
+            <div>
+              <label>Team / project <span class="tag">optional</span></label>
+              <input type="text" id="fTeam" placeholder="Growth · Q3 Onboarding">
+            </div>
+            <div>
+              <label>Hours logged <span class="tag">optional</span></label>
+              <input type="text" id="fHours" placeholder="7.5">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>✅ Shipped / completed today</label>
+            <textarea id="fDone" placeholder="Fixed checkout timeout bug (#412)&#10;Shipped v2 pricing page copy&#10;Onboarding call with Acme — 45 min"></textarea>
+          </div>
+
+          <div class="field">
+            <label>🔄 In progress <span class="tag">add % if you like: "API refactor — 60%"</span></label>
+            <textarea id="fWip" placeholder="Stripe webhook refactor — 60%&#10;Q3 roadmap draft — waiting on design"></textarea>
+          </div>
+
+          <div class="field">
+            <label>🚧 Blockers / needs</label>
+            <textarea id="fBlock" placeholder="Need staging DB creds from Devops&#10;Legal review on new ToS — 3 days waiting"></textarea>
+          </div>
+
+          <div class="field">
+            <label>🎯 Tomorrow's focus</label>
+            <textarea id="fNext" placeholder="Ship webhook refactor&#10;Prep Thursday QBR deck"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Format</label>
+            <div class="seg" id="segFormat">
+              <button data-f="slack" class="on">Slack</button>
+              <button data-f="email">Email</button>
+              <button data-f="markdown">Markdown</button>
+              <button data-f="plain">Plain</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Tone</label>
+            <div class="seg" id="segTone">
+              <button data-t="crisp" class="on">Crisp</button>
+              <button data-t="formal">Formal</button>
+              <button data-t="warm">Warm</button>
+            </div>
+          </div>
+
+          <div class="field" style="margin-bottom:0">
+            <label>How did today feel? <span class="tag">sets the one-line summary</span></label>
+            <div class="mood" id="mood">
+              <button data-m="great" title="Great day">🚀</button>
+              <button data-m="solid" class="on" title="Solid day">👍</button>
+              <button data-m="mixed" title="Mixed">😐</button>
+              <button data-m="rough" title="Rough">🥵</button>
+              <button data-m="blocked" title="Blocked">🧱</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OUTPUT -->
+        <div class="pane">
+          <div class="pane-head">
+            <h3>Your EOD report</h3>
+            <span class="hint" id="fmtLabel">Slack format</span>
+          </div>
+          <div class="out-wrap">
+            <div class="out" id="out"><span class="empty">Start typing on the left — your report writes itself here. Or hit “Load sample” up top.</span></div>
+            <div class="out-actions">
+              <button class="btn btn-primary" id="btnCopy">📋 Copy report</button>
+              <button class="btn" id="btnPdf">📄 Download PDF</button>
+              <button class="btn" id="btnWord">📝 Download Word</button>
+              <button class="btn" id="btnDl">⬇ .md</button>
+              <button class="btn" id="btnMail">✉ Email</button>
+            </div>
+            <div class="stats">
+              <span><b id="stItems">0</b> items</span>
+              <span><b id="stWords">0</b> words</span>
+              <span><b id="stRead">0s</b> read time</span>
+              <span id="stSaved" style="margin-left:auto;color:var(--good)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW ============ -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps. No blank page.</h2>
+      <p>The hard part of an EOD isn't the writing — it's remembering what you did and making it sound like a report.</p>
+    </div>
+    <div class="steps rv">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Brain-dump your bullets</h3>
+        <p>Type the way you'd text a colleague. Fragments, typos, half-sentences — all fine.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Pick format &amp; tone</h3>
+        <p>Slack for standups, email for managers, Markdown for Notion, plain text for anything else.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Copy, send, log off</h3>
+        <p>One click to clipboard, PDF, or your mail client. Yesterday's report auto-restores tomorrow.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="eyebrow">Why it sticks</div>
+      <h2>Built for people who hate writing EODs</h2>
+      <p>Every feature exists to shave seconds off the 6pm tax.</p>
+    </div>
+    <div class="cards rv">
+      <div class="card">
+        <div class="ico">⚡</div>
+        <h3>Live as you type</h3>
+        <p>No “generate” button to wait on. The report updates on every keystroke, so you always see exactly what your manager will read.</p>
+      </div>
+      <div class="card">
+        <div class="ico">🎨</div>
+        <h3>Four real formats</h3>
+        <p>Slack keeps the emoji and bold markers. Email gets a greeting and sign-off. Markdown drops into Notion or Linear cleanly. Plain is plain.</p>
+      </div>
+      <div class="card">
+        <div class="ico">📄</div>
+        <h3>Real Word &amp; PDF files</h3>
+        <p>Not a print dialog — an actual <code>.doc</code> that opens in Word and a properly typeset <code>.pdf</code> with progress bars, page numbers and a summary callout. One click, straight to your downloads.</p>
+      </div>
+      <div class="card">
+        <div class="ico">🔒</div>
+        <h3>Genuinely private</h3>
+        <p>Your report is built in your browser and saved to local storage — it is never uploaded, and there's no backend to upload it to. Your blockers never touch a server.</p>
+      </div>
+      <div class="card">
+        <div class="ico">🧠</div>
+        <h3>Writes the summary for you</h3>
+        <p>It reads your item counts and mood, then opens with a one-line TL;DR — the part most people skip and every manager reads.</p>
+      </div>
+      <div class="card">
+        <div class="ico">💾</div>
+        <h3>Remembers your setup</h3>
+        <p>Name, team, format and tone persist. Tomorrow you open it and only fill in what changed.</p>
+      </div>
+      <div class="card">
+        <div class="ico">🚧</div>
+        <h3>Blockers get teeth</h3>
+        <p>Blockers are pulled to the top and flagged, not buried at the bottom. That's how they actually get unblocked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="eyebrow">FAQ</div>
+      <h2>Questions, answered</h2>
+    </div>
+    <div class="faq rv">
+      <details open>
+        <summary>Is my data sent anywhere?</summary>
+        <p>No. There is no backend and no analytics, so your report is never uploaded anywhere. Your entries are saved only to this browser's local storage, and clearing them removes them permanently. The one and only network request the page can make is fetching the PDF-rendering library from a CDN, and that happens only if you click <em>Download PDF</em> — the library is fetched, your text is not sent. Everything else, including the Word export, works fully offline.</p>
+      </details>
+      <details>
+        <summary>Does it use AI?</summary>
+        <p>Not today. It's a deterministic formatter: it takes your bullets, structures them, and writes a summary line from your item counts and mood. That means it's instant, free, and works offline. An optional AI polish pass is on the roadmap.</p>
+      </details>
+      <details>
+        <summary>Can I use it for standups or weekly reports?</summary>
+        <p>Yes. The same structure — done, in progress, blocked, next — is exactly what a standup or weekly wants. Change the date field and paste a week's worth of bullets.</p>
+      </details>
+      <details>
+        <summary>What's the “% done” thing in the In Progress box?</summary>
+        <p>Purely optional. Write <code>API refactor — 60%</code> and the report renders it as a progress item. Skip it and the line stays a plain bullet.</p>
+      </details>
+      <details>
+        <summary>Does it work on my phone?</summary>
+        <p>Yes — the panes stack and every button stays tappable. Type on the train, copy, paste into Slack, done.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section>
+  <div class="wrap">
+    <div class="cta rv">
+      <h2>Close the laptop on time.</h2>
+      <p>Sixty seconds from bullets to a report you're not embarrassed to send.</p>
+      <a href="#generator" class="btn btn-primary btn-lg">Write today's EOD →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>© <span id="yr"></span> EODly — runs entirely in your browser.</div>
+    <div style="display:flex;gap:22px">
+      <a href="#generator">Generator</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copied ✓</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const KEY = 'eodly.v1';
+
+  const F = {
+    name:$('fName'), date:$('fDate'), team:$('fTeam'), hours:$('fHours'),
+    done:$('fDone'), wip:$('fWip'), block:$('fBlock'), next:$('fNext')
+  };
+  const out = $('out');
+  let format = 'slack', tone = 'crisp', mood = 'solid';
+
+  /* ---------- helpers ---------- */
+  const lines = s => (s||'').split('\n').map(l=>l.replace(/^[-*•\s]+/,'').trim()).filter(Boolean);
+  const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const cap = s => s ? s[0].toUpperCase()+s.slice(1) : s;
+
+  function prettyDate(v){
+    if(!v) return '';
+    const [y,m,d] = v.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    return dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  }
+
+  /* progress bar for "item — 60%" */
+  function wipLine(l){
+    const m = l.match(/[—\-–:]\s*(\d{1,3})\s*%\s*$/);
+    if(!m) return {text:l, pct:null};
+    const pct = Math.min(100, parseInt(m[1],10));
+    return {text:l.slice(0,m.index).trim(), pct};
+  }
+  const bar = p => '█'.repeat(Math.round(p/10)) + '░'.repeat(10-Math.round(p/10));
+
+  /* ---------- the summary line — the actual "generation" ---------- */
+  function summarize(d,w,b,n){
+    const moodMap = {
+      great:  ['Strong day','A genuinely strong day','Great day — momentum is real'],
+      solid:  ['Solid day','Steady progress','A productive, uneventful day'],
+      mixed:  ['Mixed day','Progress, with friction','Some wins, some drag'],
+      rough:  ['Tough day','Heavy day','A grind, but ground was gained'],
+      blocked:['Blocked day','Held up more than moved','Little forward motion — see blockers']
+    };
+    const lead = moodMap[mood][tone==='formal'?2:(tone==='warm'?1:0)];
+    const bits = [];
+    if(d.length) bits.push(`${d.length} item${d.length>1?'s':''} shipped`);
+    if(w.length) bits.push(`${w.length} in flight`);
+    if(b.length) bits.push(`${b.length} blocker${b.length>1?'s':''} needing attention`);
+    if(!bits.length) return tone==='formal' ? 'No material updates to report today.' : 'Quiet one — nothing major to report.';
+    let s = `${lead}: ${bits.join(', ')}.`;
+    if(b.length && mood!=='blocked') s += tone==='formal' ? ' Blocker resolution is the priority for tomorrow.' : ' Blockers are the thing to unstick first.';
+    else if(n.length && !b.length) s += tone==='warm' ? ` Heading into tomorrow with ${n.length} clear priorit${n.length>1?'ies':'y'}.` : '';
+    return s;
+  }
+
+  const GREET = {crisp:'Hi', formal:'Good evening', warm:'Hey'};
+  const SIGN  = {crisp:'— ', formal:'Best regards,\n', warm:'Thanks,\n'};
+
+  /* ---------- renderers ---------- */
+  function build(){
+    const d = lines(F.done.value), w = lines(F.wip.value),
+          b = lines(F.block.value), n = lines(F.next.value);
+    const name = F.name.value.trim(), team = F.team.value.trim(),
+          hrs = F.hours.value.trim(), date = prettyDate(F.date.value);
+    const total = d.length + w.length + b.length + n.length;
+
+    if(!total && !name){
+      out.innerHTML = '<span class="empty">Start typing on the left — your report writes itself here. Or hit “Load sample” up top.</span>';
+      setStats(0,'');
+      return '';
+    }
+
+    const tldr = summarize(d,w,b,n);
+    const L = [];
+    const H = {
+      slack:    {done:'*✅ Shipped*', wip:'*🔄 In progress*', block:'*🚧 Blocked / needs*', next:'*🎯 Tomorrow*'},
+      email:    {done:'Completed today', wip:'In progress', block:'Blockers', next:'Focus for tomorrow'},
+      markdown: {done:'### ✅ Shipped', wip:'### 🔄 In progress', block:'### 🚧 Blocked / needs', next:'### 🎯 Tomorrow'},
+      plain:    {done:'COMPLETED TODAY', wip:'IN PROGRESS', block:'BLOCKERS', next:'TOMORROW'}
+    }[format];
+    const bullet = format==='markdown' ? '- ' : format==='plain' ? '  - ' : '• ';
+
+    /* header */
+    if(format==='slack'){
+      L.push(`*EOD — ${name||'Update'}${date?` · ${date}`:''}*`);
+      if(team) L.push(`_${team}_`);
+      L.push('');
+      L.push(tldr);
+    } else if(format==='email'){
+      L.push(`Subject: EOD — ${name||'Update'}${date?` — ${date}`:''}`);
+      L.push('');
+      L.push(`${GREET[tone]},`);
+      L.push('');
+      L.push(tldr);
+    } else if(format==='markdown'){
+      L.push(`## EOD Report — ${name||'Update'}`);
+      const meta = [date, team, hrs?`${hrs}h logged`:''].filter(Boolean).join(' · ');
+      if(meta) L.push(`*${meta}*`);
+      L.push('');
+      L.push(`> ${tldr}`);
+    } else {
+      L.push(`EOD REPORT${name?` — ${name.toUpperCase()}`:''}`);
+      if(date) L.push(date);
+      if(team) L.push(team);
+      L.push('='.repeat(46));
+      L.push('');
+      L.push(tldr);
+    }
+    L.push('');
+
+    /* blockers first when they exist and format allows a callout */
+    const sec = (title, arr, fmt) => {
+      if(!arr.length) return;
+      L.push(title);
+      arr.forEach(item => L.push(bullet + (fmt ? fmt(item) : cap(item))));
+      L.push('');
+    };
+
+    if(b.length && format!=='email'){
+      L.push(format==='slack' ? '⚠️ *Needs attention first*' : format==='markdown' ? '### ⚠️ Needs attention first' : '!! NEEDS ATTENTION FIRST');
+      b.forEach(x => L.push(bullet + cap(x)));
+      L.push('');
+    }
+
+    sec(H.done, d);
+    sec(H.wip, w, item => {
+      const {text,pct} = wipLine(item);
+      return pct===null ? cap(text) : `${cap(text)}  ${bar(pct)} ${pct}%`;
+    });
+    if(!(b.length && format!=='email')) sec(H.block, b);
+    sec(H.next, n);
+
+    /* footer */
+    if(format==='slack' && hrs) L.push(`_${hrs}h logged_`);
+    if(format==='email'){
+      L.push(hrs ? `Hours logged: ${hrs}` : '');
+      L.push(SIGN[tone] + (name||''));
+    }
+    if(format==='plain' && hrs) L.push(`Hours logged: ${hrs}`);
+
+    const text = L.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+
+    /* render with light highlighting */
+    out.innerHTML = esc(text)
+      .split('\n')
+      .map(l=>{
+        if(/^(\*|#|=|!!|[A-Z][A-Z ]{3,}$|Subject:)/.test(l) || /^&gt;/.test(l))
+          return `<span class="h">${l}</span>`;
+        if(/^(_|Hi|Hey|Good evening|Best regards|Thanks|— )/.test(l))
+          return `<span class="m">${l}</span>`;
+        return l;
+      }).join('\n');
+
+    setStats(total, text);
+    return text;
+  }
+
+  function setStats(items, text){
+    const words = text ? text.trim().split(/\s+/).length : 0;
+    $('stItems').textContent = items;
+    $('stWords').textContent = words;
+    $('stRead').textContent = Math.max(1, Math.round(words/220*60)) + 's';
+  }
+
+  /* ---------- persistence ---------- */
+  let saveT;
+  function save(){
+    clearTimeout(saveT);
+    saveT = setTimeout(()=>{
+      const data = {format, tone, mood};
+      Object.keys(F).forEach(k => data[k] = F[k].value);
+      try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){}
+      const s = $('stSaved');
+      s.textContent = 'Saved ✓';
+      setTimeout(()=>{ s.textContent=''; }, 1600);
+    }, 500);
+  }
+
+  function load(){
+    let data = null;
+    try{ data = JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
+    if(!data) return false;
+    Object.keys(F).forEach(k => { if(data[k]!=null) F[k].value = data[k]; });
+    if(data.format) setSeg('segFormat','f', format = data.format);
+    if(data.tone)   setSeg('segTone','t', tone = data.tone);
+    if(data.mood){ mood = data.mood; setMood(mood); }
+    return true;
+  }
+
+  function setSeg(id, attr, val){
+    $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset[attr]===val));
+    $('fmtLabel').textContent = cap(format) + ' format';
+  }
+  function setMood(v){
+    document.querySelectorAll('#mood button').forEach(x => x.classList.toggle('on', x.dataset.m===v));
+  }
+
+  /* ---------- events ---------- */
+  Object.values(F).forEach(el => el.addEventListener('input', ()=>{ build(); save(); }));
+
+  $('segFormat').addEventListener('click', e=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    format = btn.dataset.f; setSeg('segFormat','f',format); build(); save();
+  });
+  $('segTone').addEventListener('click', e=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    tone = btn.dataset.t; setSeg('segTone','t',tone); build(); save();
+  });
+  $('mood').addEventListener('click', e=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    mood = btn.dataset.m; setMood(mood); build(); save();
+  });
+
+  function toast(msg){
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1900);
+  }
+
+  $('btnCopy').addEventListener('click', async ()=>{
+    const text = build();
+    if(!text) return toast('Nothing to copy yet');
+    try{
+      await navigator.clipboard.writeText(text);
+    }catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+    }
+    toast('Copied — go paste it ✓');
+  });
+
+  $('btnDl').addEventListener('click', ()=>{
+    const text = build();
+    if(!text) return toast('Nothing to download yet');
+    const blob = new Blob([text], {type:'text/markdown'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileStem() + '.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Downloaded ✓');
+  });
+
+  /* ---------- document model shared by Word + PDF ---------- */
+  function docModel(){
+    const d = lines(F.done.value), w = lines(F.wip.value),
+          b = lines(F.block.value), n = lines(F.next.value);
+    return {
+      name: F.name.value.trim(),
+      team: F.team.value.trim(),
+      hours: F.hours.value.trim(),
+      date: prettyDate(F.date.value),
+      tldr: summarize(d,w,b,n),
+      empty: !(d.length+w.length+b.length+n.length),
+      sections: [
+        {title:'Blockers / needs',   items:b, flag:true},
+        {title:'Shipped / completed',items:d},
+        {title:'In progress',        items:w, wip:true},
+        {title:"Tomorrow's focus",   items:n}
+      ].filter(s => s.items.length)
+    };
+  }
+  const fileStem = () => `EOD-${(F.name.value.trim()||'report').replace(/\s+/g,'-')}-${F.date.value||'today'}`;
+
+  /* ---------- WORD (.doc — opens natively in Word, Pages, Docs) ---------- */
+  $('btnWord').addEventListener('click', ()=>{
+    const m = docModel();
+    if(m.empty && !m.name) return toast('Nothing to download yet');
+    const meta = [m.date, m.team, m.hours ? m.hours+'h logged' : ''].filter(Boolean).join(' &nbsp;·&nbsp; ');
+
+    const body = m.sections.map(s => {
+      const items = s.items.map(it=>{
+        if(s.wip){
+          const {text,pct} = wipLine(it);
+          return pct===null
+            ? `<li>${esc(cap(text))}</li>`
+            : `<li>${esc(cap(text))} <span style="color:#6d5efc;font-weight:bold">— ${pct}%</span></li>`;
+        }
+        return `<li>${esc(cap(it))}</li>`;
+      }).join('');
+      const color = s.flag ? '#c2410c' : '#111827';
+      return `<h2 style="font-family:Calibri,Arial,sans-serif;font-size:13pt;color:${color};
+                border-bottom:1px solid #e5e7eb;padding-bottom:4pt;margin:18pt 0 8pt">
+                ${s.flag?'⚠ ':''}${s.title}</h2>
+              <ul style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1f2937;line-height:1.5">${items}</ul>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${esc(fileStem())}</title>
+<xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml>
+<style>@page{size:A4;margin:2cm} body{font-family:Calibri,Arial,sans-serif}</style>
+</head>
+<body>
+  <h1 style="font-size:20pt;color:#111827;margin:0 0 4pt">End of Day Report</h1>
+  <p style="font-size:10pt;color:#6b7280;margin:0 0 2pt">${esc(m.name||'')}</p>
+  <p style="font-size:9.5pt;color:#9ca3af;margin:0 0 14pt">${meta}</p>
+  <table cellpadding="10" style="width:100%;background:#f4f3ff;border-left:3pt solid #6d5efc;margin-bottom:6pt">
+    <tr><td style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#3730a3">
+      <b>Summary:</b> ${esc(m.tldr)}</td></tr>
+  </table>
+  ${body}
+  <p style="font-size:8.5pt;color:#9ca3af;margin-top:24pt;border-top:1px solid #e5e7eb;padding-top:6pt">
+    Generated with EODly</p>
+</body></html>`;
+
+    const blob = new Blob(['﻿', html], {type:'application/msword'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileStem() + '.doc';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Word file downloaded ✓');
+  });
+
+  /* ---------- PDF (lazy-loads jsPDF; falls back to print if offline) ---------- */
+  let jsPDFReady = null;
+  function loadJsPDF(){
+    if(window.jspdf) return Promise.resolve(true);
+    if(jsPDFReady) return jsPDFReady;
+    jsPDFReady = new Promise(res=>{
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = () => res(true);
+      s.onerror = () => res(false);
+      document.head.appendChild(s);
+    });
+    return jsPDFReady;
+  }
+
+  $('btnPdf').addEventListener('click', async ()=>{
+    const m = docModel();
+    if(m.empty && !m.name) return toast('Nothing to download yet');
+
+    const btn = $('btnPdf'), label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Building PDF…';
+    const ok = await loadJsPDF();
+    btn.disabled = false; btn.textContent = label;
+
+    if(!ok){
+      toast('Offline — using print-to-PDF instead');
+      window.print();
+      return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'pt', format:'a4'});
+    const M = 56, W = 595 - M*2;
+    let y = 64;
+
+    const page = h => { if(y + h > 780){ doc.addPage(); y = 64; } };
+
+    doc.setFont('helvetica','bold').setFontSize(20).setTextColor(17,24,39);
+    doc.text('End of Day Report', M, y); y += 22;
+
+    if(m.name){
+      doc.setFont('helvetica','normal').setFontSize(11).setTextColor(107,114,128);
+      doc.text(m.name, M, y); y += 14;
+    }
+    const meta = [m.date, m.team, m.hours ? m.hours+'h logged' : ''].filter(Boolean).join('  ·  ');
+    if(meta){
+      doc.setFontSize(9.5).setTextColor(156,163,175);
+      doc.text(meta, M, y); y += 10;
+    }
+    y += 12;
+
+    /* summary callout */
+    const sum = doc.setFontSize(10.5).splitTextToSize(m.tldr, W - 28);
+    const boxH = sum.length * 14 + 20;
+    doc.setFillColor(244,243,255).rect(M, y, W, boxH, 'F');
+    doc.setFillColor(109,94,252).rect(M, y, 3, boxH, 'F');
+    doc.setFont('helvetica','normal').setTextColor(55,48,163);
+    doc.text(sum, M + 14, y + 16);
+    y += boxH + 24;
+
+    m.sections.forEach(s=>{
+      page(48);
+      doc.setFont('helvetica','bold').setFontSize(12);
+      if(s.flag) doc.setTextColor(194,65,12); else doc.setTextColor(17,24,39);
+      doc.text((s.flag?'! ':'') + s.title, M, y); y += 7;
+      doc.setDrawColor(229,231,235).setLineWidth(.7).line(M, y, M + W, y); y += 16;
+
+      s.items.forEach(it=>{
+        let txt = cap(it), pct = null;
+        if(s.wip){ const p = wipLine(it); txt = cap(p.text); pct = p.pct; }
+        const wrapped = doc.setFont('helvetica','normal').setFontSize(10.5)
+                           .splitTextToSize(txt, W - 34);
+        page(wrapped.length * 14 + 8);
+        doc.setFillColor(s.flag ? 251 : 109, s.flag ? 113 : 94, s.flag ? 133 : 252)
+           .circle(M + 4, y - 3.5, 2, 'F');
+        doc.setTextColor(31,41,55).text(wrapped, M + 16, y);
+        y += wrapped.length * 14;
+
+        if(pct !== null){
+          const bw = 90;
+          doc.setFillColor(229,231,235).roundedRect(M + 16, y - 4, bw, 5, 2.5, 2.5, 'F');
+          doc.setFillColor(109,94,252).roundedRect(M + 16, y - 4, bw * pct/100, 5, 2.5, 2.5, 'F');
+          doc.setFontSize(8.5).setTextColor(109,94,252).text(pct + '%', M + 16 + bw + 8, y);
+          y += 12;
+        }
+        y += 4;
+      });
+      y += 12;
+    });
+
+    const n = doc.internal.getNumberOfPages();
+    for(let i=1;i<=n;i++){
+      doc.setPage(i).setFontSize(8.5).setTextColor(156,163,175);
+      doc.text('Generated with EODly', M, 800);
+      doc.text(`${i} / ${n}`, 595 - M, 800, {align:'right'});
+    }
+
+    doc.save(fileStem() + '.pdf');
+    toast('PDF downloaded ✓');
+  });
+
+  $('btnMail').addEventListener('click', ()=>{
+    const text = build();
+    if(!text) return toast('Nothing to send yet');
+    const subj = `EOD — ${F.name.value.trim()||'Update'}${F.date.value?` — ${prettyDate(F.date.value)}`:''}`;
+    const body = text.replace(/^Subject:.*\n\n?/,'');
+    window.location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+  });
+
+  $('btnSample').addEventListener('click', ()=>{
+    F.name.value  = 'Alex Rivera';
+    F.team.value  = 'Growth · Q3 Onboarding';
+    F.hours.value = '7.5';
+    F.done.value  = 'shipped v2 pricing page copy — live at 3pm\nfixed the checkout timeout bug (#412), root cause was a stale redis lock\nonboarding call with Acme, 45 min — they want SSO before signing\nreviewed 3 PRs for the mobile team';
+    F.wip.value   = 'stripe webhook refactor — 60%\nQ3 roadmap draft — 30%\nmigrating analytics events to the new schema';
+    F.block.value = 'need staging DB creds from DevOps — asked Monday, still nothing\nlegal review on the new ToS is 3 days overdue, holding the launch';
+    F.next.value  = 'finish + ship the webhook refactor\nprep Thursday QBR deck\nchase DevOps on creds first thing';
+    mood = 'solid'; setMood(mood);
+    build(); save(); toast('Sample loaded ✓');
+  });
+
+  $('btnClear').addEventListener('click', ()=>{
+    if(!confirm('Clear everything, including your saved entries?')) return;
+    Object.values(F).forEach(el => { if(el.type!=='date') el.value=''; });
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    build(); toast('Cleared');
+  });
+
+  /* ---------- init ---------- */
+  const today = new Date();
+  const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  F.date.value = iso;
+  $('yr').textContent = today.getFullYear();
+
+  const restored = load();
+  if(!F.date.value) F.date.value = iso;
+  build();
+  if(!restored){ setSeg('segFormat','f',format); setSeg('segTone','t',tone); }
+
+  /* nav border + reveal */
+  const nav = $('nav');
+  addEventListener('scroll', ()=> nav.classList.toggle('stuck', scrollY > 12));
+  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.12});
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+  /* cmd/ctrl+enter to copy */
+  addEventListener('keydown', e => {
+    if((e.metaKey||e.ctrlKey) && e.key === 'Enter'){ e.preventDefault(); $('btnCopy').click(); }
+  });
+})();
+</script>
+</body>
+</html>
