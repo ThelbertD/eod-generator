@@ -41,11 +41,6 @@
   .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.02em}
   .logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
     display:grid;place-items:center;font-size:15px;box-shadow:0 4px 16px -4px rgba(109,94,252,.7)}
-  .nav-links{display:flex;align-items:center;gap:28px}
-  .nav-links a{font-size:14px;color:var(--txt-2);transition:color .18s}
-  .nav-links a:hover{color:var(--txt)}
-  @media(max-width:760px){.nav-links a:not(.btn){display:none}}
-
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;
     font-size:14px;font-weight:600;border:1px solid var(--line-2);background:var(--panel-2);color:var(--txt);
     cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap}
@@ -165,17 +160,6 @@
   .toast.show{opacity:1;transform:translate(-50%,0)}
   .toast.warn{background:var(--warn);color:#241a02;box-shadow:0 12px 40px -8px rgba(251,191,36,.6)}
 
-  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  @media(max-width:900px){.cards{grid-template-columns:1fr}}
-  .card{background:linear-gradient(180deg,var(--panel),rgba(12,14,20,.5));border:1px solid var(--line);
-    border-radius:var(--radius);padding:26px;transition:transform .22s,border-color .22s}
-  .card:hover{transform:translateY(-4px);border-color:var(--line-2)}
-  .card .ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
-    background:rgba(109,94,252,.12);border:1px solid rgba(109,94,252,.28);font-size:19px;margin-bottom:16px}
-  .card h3{font-size:16.5px;font-weight:700;margin-bottom:8px;letter-spacing:-.01em}
-  .card p{font-size:14.5px;color:var(--txt-2);line-height:1.65}
-  .card code{font-family:var(--mono);font-size:13px;color:var(--accent-2);background:rgba(34,211,238,.08);padding:1px 5px;border-radius:4px}
-
   .steps{display:grid;grid-template-columns:repeat(3,1fr)}
   @media(max-width:900px){.steps{grid-template-columns:1fr;gap:28px}}
   .step{padding:0 24px;text-align:center;position:relative}
@@ -187,21 +171,6 @@
     border:1px solid var(--line-2);color:var(--accent-2)}
   .step h3{font-size:16px;margin-bottom:8px;font-weight:700}
   .step p{font-size:14.5px;color:var(--txt-2)}
-
-  .faq{max-width:720px;margin:0 auto}
-  details{border-bottom:1px solid var(--line);padding:20px 0}
-  summary{cursor:pointer;font-weight:650;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px}
-  summary::-webkit-details-marker{display:none}
-  summary::after{content:'+';color:var(--accent-2);font-size:21px;font-weight:400;transition:transform .2s}
-  details[open] summary::after{transform:rotate(45deg)}
-  details p{margin-top:12px;color:var(--txt-2);font-size:15px;line-height:1.7}
-  details code{font-family:var(--mono);font-size:13.5px;color:var(--accent-2)}
-
-  .cta{text-align:center;padding:64px 32px;border-radius:22px;
-    background:radial-gradient(600px 300px at 50% 0%,rgba(109,94,252,.22),transparent 70%),linear-gradient(180deg,var(--panel),var(--bg-2));
-    border:1px solid var(--line-2)}
-  .cta h2{margin-bottom:12px}
-  .cta p{color:var(--txt-2);margin-bottom:28px;font-size:16.5px}
 
   footer{border-top:1px solid var(--line);padding:34px 0;margin-top:80px}
   .foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--txt-3)}
@@ -218,12 +187,6 @@
 <nav id="nav">
   <div class="wrap nav-in">
     <div class="logo"><span class="logo-mark">🌙</span> EODly</div>
-    <div class="nav-links">
-      <a href="#how">How it works</a>
-      <a href="#features">Features</a>
-      <a href="#faq">FAQ</a>
-      <a href="#generator" class="btn btn-primary btn-sm">Write my EOD →</a>
-    </div>
   </div>
 </nav>
 
@@ -360,91 +323,11 @@
   </div>
 </section>
 
-<section id="features">
-  <div class="wrap">
-    <div class="sec-head rv">
-      <div class="eyebrow">Why it sticks</div>
-      <h2>Built for people who hate writing EODs</h2>
-      <p>Every feature exists to shave seconds off the 6pm tax.</p>
-    </div>
-    <div class="cards rv">
-      <div class="card">
-        <div class="ico">🖼</div>
-        <h3>Screenshots inside any section</h3>
-        <p>Add an image to Shipped, In progress, Blockers or Tomorrow — then write more text below it. Drag a file in, click to browse, or just paste from your clipboard.</p>
-      </div>
-      <div class="card">
-        <div class="ico">🌐</div>
-        <h3>Exports a real web page</h3>
-        <p>One click gives you a self-contained <code>.html</code> file — screenshots embedded, no folder of assets. Open it anywhere, or drop it on any host and send the link.</p>
-      </div>
-      <div class="card">
-        <div class="ico">⚡</div>
-        <h3>Live as you type</h3>
-        <p>No “generate” button to wait on. The report updates on every keystroke, so you always see exactly what your manager will read.</p>
-      </div>
-      <div class="card">
-        <div class="ico">📄</div>
-        <h3>Real Word &amp; PDF files</h3>
-        <p>Not a print dialog — an actual <code>.doc</code> that opens in Word and a typeset <code>.pdf</code>, both with your screenshots and progress bars laid out properly.</p>
-      </div>
-      <div class="card">
-        <div class="ico">🧠</div>
-        <h3>Writes the summary for you</h3>
-        <p>It reads your item counts and mood, then opens with a one-line TL;DR — the part most people skip and every manager reads.</p>
-      </div>
-      <div class="card">
-        <div class="ico">🔒</div>
-        <h3>Genuinely private</h3>
-        <p>Your report and images are built in your browser and saved locally. There's no backend to upload them to. Your blockers never touch a server.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="faq">
-  <div class="wrap">
-    <div class="sec-head rv"><div class="eyebrow">FAQ</div><h2>Questions, answered</h2></div>
-    <div class="faq rv">
-      <details open>
-        <summary>How do I add an image and then write under it?</summary>
-        <p>Each section is a stack of blocks. Hit <b>+ Image</b> to add a picture, then <b>+ Text</b> to add another writing box below it — repeat as much as you like. You can also drag a file straight onto a section, or paste a screenshot from your clipboard with <code>Ctrl/Cmd+V</code>. Use the ↑ ↓ arrows on any block to reorder.</p>
-      </details>
-      <details>
-        <summary>Where do the images actually show up?</summary>
-        <p>In the <b>Web page</b>, <b>Word</b> and <b>PDF</b> exports, embedded directly in the file. Slack, email, Markdown and plain text are text-only formats, so images appear there as a labelled placeholder like <code>[Image: staging error]</code> — paste those screenshots in manually after posting.</p>
-      </details>
-      <details>
-        <summary>Is my data sent anywhere?</summary>
-        <p>No. There is no backend and no analytics, so your report and screenshots are never uploaded. Everything is saved only to this browser's local storage. The one network request the page can make is fetching the PDF-rendering library from a CDN, and only if you click <b>PDF</b> — the library comes down, your content does not go up.</p>
-      </details>
-      <details>
-        <summary>Will lots of screenshots break it?</summary>
-        <p>Images are automatically resized and compressed before they're stored, which keeps things fast. But browser local storage is capped at a few megabytes, so if you add a lot of large images the auto-save may not fit — you'll get a clear warning if that happens, and your report still exports perfectly. Just export before closing the tab.</p>
-      </details>
-      <details>
-        <summary>What's the “% done” thing in In progress?</summary>
-        <p>Optional. Write <code>API refactor — 60%</code> and the report renders a real progress bar for it in the web, Word and PDF exports. Skip it and the line stays a plain bullet.</p>
-      </details>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="cta rv">
-      <h2>Close the laptop on time.</h2>
-      <p>Sixty seconds from bullets to a report you're not embarrassed to send.</p>
-      <a href="#generator" class="btn btn-primary btn-lg">Write today's EOD →</a>
-    </div>
-  </div>
-</section>
-
 <footer>
   <div class="wrap foot">
     <div>© <span id="yr"></span> EODly — runs entirely in your browser.</div>
     <div style="display:flex;gap:22px">
-      <a href="#generator">Generator</a><a href="#features">Features</a><a href="#faq">FAQ</a>
+      <a href="#generator">Generator</a><a href="#how">How it works</a>
     </div>
   </div>
 </footer>
